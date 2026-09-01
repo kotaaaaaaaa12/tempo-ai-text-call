@@ -44,6 +44,8 @@ Keep `public/assets/js/app.js` committed for direct Worker deploys, but edit `sr
 - Optional signed-in conversation history, disabled by default
 - History resume/delete, personalization reset, and permanent account deletion with reusable confirmation modals
 - Safari-friendly modal focus that opens on a non-interactive heading instead of a close button
+- Unsaved settings confirmation before closing with the close button or Escape
+- Fixed settings footer with only the active tab panel scrolling vertically
 - Installable PWA shell with offline launch and an in-app update action
 - Row Level Security so each account can access only its own profile and conversations
 

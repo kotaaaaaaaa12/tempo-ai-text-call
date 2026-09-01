@@ -99,6 +99,10 @@ const TRANSLATIONS = {
     light: "Light",
     dark: "Dark",
     saveSettings: "Save settings",
+    unsavedChangesTitle: "Discard unsaved changes?",
+    unsavedChangesDescription: "Your settings changes have not been saved.",
+    keepEditing: "Keep editing",
+    discardChanges: "Discard changes",
     connected: "Connected",
     connectionLost: "Connection lost",
     openingNamed: "Hey {name} — what’s on your mind?",
@@ -195,7 +199,7 @@ const TRANSLATIONS = {
     documentTitle: "tempo — AI文字通話",
     metaDescription: "入力が止まるとAIが返事するリアルタイム文字通話。",
     liveCall: "リアルタイムAI文字通話",
-    talkTo: "{name}と話そう。",
+    talkTo: "{name}と話しましょう。",
     homeLede: "文字を打つだけ。入力が止まるとAIが返事します。",
     startCall: "通話を始める",
     notSaved: "会話内容は保存されません。",
@@ -203,11 +207,11 @@ const TRANSLATIONS = {
     openSettings: "設定を開く",
     endCall: "通話を終了",
     you: "あなた",
-    startTyping: "入力してみよう…",
+    startTyping: "入力してみましょう…",
     yourMessage: "あなたのメッセージ",
     updatesAfterPause: "入力が止まると更新します",
     callEnded: "通話終了",
-    wrapTitle: "おつかれさま。",
+    wrapTitle: "おつかれさまでした。",
     duration: "通話時間",
     turns: "ターン数",
     transcript: "会話ログ",
@@ -229,7 +233,7 @@ const TRANSLATIONS = {
     tabMemory: "メモリ",
     tabHistory: "履歴",
     tabAccount: "アカウント",
-    callYou: "AIから何と呼ばれたい？",
+    callYou: "AIから何と呼ばれたいですか？",
     yourName: "あなたの名前",
     aiName: "AIの名前",
     tone: "話し方",
@@ -255,10 +259,14 @@ const TRANSLATIONS = {
     light: "ライト",
     dark: "ダーク",
     saveSettings: "設定を保存",
+    unsavedChangesTitle: "未保存の変更を破棄しますか？",
+    unsavedChangesDescription: "設定の変更はまだ保存されていません。",
+    keepEditing: "編集を続ける",
+    discardChanges: "変更を破棄",
     connected: "接続済み",
     connectionLost: "接続が切れました",
-    openingNamed: "やあ、{name}。今日は何を話す？",
-    opening: "やあ。今日は何を話す？",
+    openingNamed: "{name}さん、こんにちは。今日は何を話しますか？",
+    opening: "こんにちは。今日は何を話しますか？",
     guest: "ゲスト",
     deviceOnly: "設定はこの端末に保存されます",
     checkingSignIn: "Googleログインを確認中…",
@@ -287,7 +295,7 @@ const TRANSLATIONS = {
     authSetupError: "Googleログインの設定エラー: {message}",
     authLoadError: "Googleログイン設定を読み込めませんでした",
     suggestedActions: "提案されたアクション",
-    chooseAction: "選択肢を押すか、そのまま入力してね。",
+    chooseAction: "選択肢を押すか、そのまま入力してください。",
     conversationMode: "会話モード",
     modeGeneral: "ふつう",
     modeStudy: "勉強",
@@ -296,7 +304,7 @@ const TRANSLATIONS = {
     modeAdvice: "相談",
     modeCustom: "カスタム",
     customInstructions: "カスタムモードの指示",
-    customInstructionsPlaceholder: "どんなモードにする？",
+    customInstructionsPlaceholder: "どのようなモードにしますか？",
     sendTiming: "送信タイミング",
     sendFast: "速い · 0.9秒",
     sendNormal: "ふつう · 1.5秒",
@@ -307,45 +315,45 @@ const TRANSLATIONS = {
     sendHintSlow: "2.5秒止まると更新します",
     sendHintManual: "Enterで送信します",
     saveHistory: "会話履歴を保存",
-    historyOffNote: "初期設定はOFF。ログイン中の自分のアカウントだけに保存します。",
+    historyOffNote: "初期設定はOFFです。ログイン中のアカウントにのみ保存されます。",
     history: "履歴",
     yourCalls: "あなたの通話",
     closeHistory: "履歴を閉じる",
     historyEmpty: "保存した通話はまだありません。",
     historyLoading: "保存した通話を読み込み中…",
-    historySignIn: "履歴を使うにはログインしてね。",
+    historySignIn: "履歴を利用するにはログインしてください。",
     historySaved: "会話を履歴に保存しました",
-    historySaveFailed: "会話を保存できませんでした。最新のsupabase/schema.sqlを実行してね。",
+    historySaveFailed: "会話を保存できませんでした。最新のsupabase/schema.sqlを実行してください。",
     clearHistory: "履歴をすべて削除",
-    clearHistoryConfirm: "保存した会話を全部削除する？",
+    clearHistoryConfirm: "保存した会話をすべて削除しますか？",
     clearHistoryDescription: "アカウントに保存されたすべての会話を完全に削除します。",
-    deleteCallConfirm: "この会話を削除する？",
+    deleteCallConfirm: "この会話を削除しますか？",
     deleteCallDescription: "この保存済み会話を完全に削除します。",
     deleteCall: "会話を削除",
     resumeCall: "通話を再開",
     turnCount: "{count}ターン",
     resetPersonalization: "パーソナライズをリセット",
-    resetConfirm: "AIの名前・話し方・モード・覚えた内容をリセットする？",
+    resetConfirm: "AIの名前・話し方・モード・覚えた内容をリセットしますか？",
     resetDescription: "一般設定と保存した会話履歴はそのまま残ります。",
     personalizationReset: "パーソナライズをリセットしました",
     deleteAccount: "アカウントを削除",
     dangerZone: "注意",
     confirm: "確認",
-    deleteAccountTitle: "アカウントを削除する？",
+    deleteAccountTitle: "アカウントを削除しますか？",
     deleteAccountDescription: "設定と保存した会話を完全に削除します。この操作は元に戻せません。",
     cancel: "キャンセル",
     accountDeleted: "アカウントを削除しました",
-    accountDeleteFailed: "アカウントを削除できませんでした。最新のsupabase/schema.sqlを実行してね。",
+    accountDeleteFailed: "アカウントを削除できませんでした。最新のsupabase/schema.sqlを実行してください。",
     remembered: "覚えてほしいことに追加しました",
-    memoryFull: "覚えてほしいことがいっぱいです",
+    memoryFull: "保存できるメモリの上限に達しています",
     appInstall: "アプリとして使う",
     appInstallNote: "ホーム画面に追加して、アプリの画面をオフラインでも開けます。",
     installApp: "ホーム画面に追加",
     updateApp: "アプリを更新",
-    installIos: "Safariの共有ボタンから「ホーム画面に追加」を押してね。",
+    installIos: "Safariの共有ボタンから「ホーム画面に追加」を選択してください。",
     installUnavailable: "ブラウザのメニューからインストールできます。",
     appInstalled: "tempoをインストールしました",
-    historyNeedsLogin: "会話履歴を保存するにはログインしてね"
+    historyNeedsLogin: "会話履歴を保存するにはログインしてください"
   }
 };
 
@@ -711,7 +719,6 @@ function selectSettingsTab(name) {
   for (const panel of elements.settingsPanels) {
     panel.classList.toggle("is-hidden", panel.dataset.settingsPanel !== name);
   }
-  selected.scrollIntoView({ block: "nearest", inline: "nearest" });
   if (name === "memory") renderMemoryList();
   if (name === "history") void loadHistory();
 }
@@ -742,17 +749,12 @@ function handleSettingsTabKeydown(event) {
   tabs[next].focus({ preventScroll: true });
 }
 
-function closeSettings() {
-  if (elements.settingsDialog.open) elements.settingsDialog.close();
-}
-
-async function saveSettings(event) {
-  event.preventDefault();
-  const next = normalizeSettings({
-    ...state.formDraft,
+function collectSettingsForm() {
+  return normalizeSettings({
+    ...(state.formDraft || state.settings),
     displayName: elements.displayNameInput.value,
     aiName: elements.aiNameInput.value,
-    memory: state.formDraft.memory,
+    memory: state.formDraft?.memory ?? state.settings.memory,
     conversationMode: elements.modeSelect.value,
     customModePrompt: elements.customModeInput.value,
     sendDelay: elements.sendDelaySelect.value,
@@ -760,6 +762,53 @@ async function saveSettings(event) {
     language: elements.languageSelect.value,
     theme: elements.themeSelect.value
   });
+}
+
+function hasUnsavedSettings() {
+  return Boolean(
+    elements.settingsDialog.open
+    && state.formDraft
+    && JSON.stringify(collectSettingsForm()) !== JSON.stringify(state.settings)
+  );
+}
+
+function requestSettingsClose(afterClose = null) {
+  if (!elements.settingsDialog.open) {
+    if (afterClose) afterClose();
+    return;
+  }
+  if (!hasUnsavedSettings()) {
+    closeSettings(true);
+    if (afterClose) afterClose();
+    return;
+  }
+  openConfirmation({
+    titleKey: "unsavedChangesTitle",
+    descriptionKey: "unsavedChangesDescription",
+    confirmKey: "discardChanges",
+    cancelKey: "keepEditing",
+    action: async () => {
+      closeSettings(true);
+      if (afterClose) afterClose();
+      return true;
+    },
+    eyebrowKey: "confirm"
+  });
+}
+
+function closeSettings(force = false) {
+  if (!elements.settingsDialog.open) return;
+  if (!force && hasUnsavedSettings()) {
+    requestSettingsClose();
+    return;
+  }
+  elements.settingsDialog.close();
+  state.formDraft = null;
+}
+
+async function saveSettings(event) {
+  event.preventDefault();
+  const next = collectSettingsForm();
   state.settings = next;
   storeSettings();
   applySettings();
@@ -770,7 +819,7 @@ async function saveSettings(event) {
   } else {
     showToast(translate("localSaved"));
   }
-  closeSettings();
+  closeSettings(true);
 }
 
 async function initAuth(showProblem = false) {
@@ -932,17 +981,18 @@ async function deleteAccount() {
   state.settings = { ...DEFAULT_SETTINGS };
   storeSettings();
   applySettings();
-  closeSettings();
+  closeSettings(true);
   showToast(translate("accountDeleted"));
   return true;
 }
 
-function openConfirmation({ titleKey, descriptionKey, confirmKey, action, eyebrowKey = "dangerZone" }) {
+function openConfirmation({ titleKey, descriptionKey, confirmKey, action, eyebrowKey = "dangerZone", cancelKey = "cancel" }) {
   state.pendingConfirmation = { action };
   elements.confirmEyebrow.textContent = translate(eyebrowKey);
   elements.confirmEyebrow.classList.toggle("danger-text", eyebrowKey === "dangerZone");
   elements.confirmTitle.textContent = translate(titleKey);
   elements.confirmDescription.textContent = translate(descriptionKey);
+  elements.cancelConfirm.textContent = translate(cancelKey);
   elements.confirmAction.textContent = translate(confirmKey);
   showDialog(elements.confirmDialog);
 }
@@ -1059,8 +1109,7 @@ function renderHistory(records) {
 
 function resumeConversation(id, messages) {
   if (!messages.length) return;
-  closeSettings();
-  beginCall(messages, id);
+  requestSettingsClose(() => beginCall(messages, id));
 }
 
 async function deleteConversation(id, item) {
@@ -1673,8 +1722,12 @@ function updateViewportHeight() {
 }
 
 elements.accountButton.addEventListener("click", () => openSettings("account"));
-elements.settingsButton.addEventListener("click", openSettings);
-elements.closeSettings.addEventListener("click", closeSettings);
+elements.settingsButton.addEventListener("click", () => openSettings("general"));
+elements.closeSettings.addEventListener("click", () => closeSettings());
+elements.settingsDialog.addEventListener("cancel", (event) => {
+  event.preventDefault();
+  closeSettings();
+});
 elements.settingsForm.addEventListener("submit", saveSettings);
 elements.settingsTabs.addEventListener("click", handleSettingsTabClick);
 elements.settingsTabs.addEventListener("keydown", handleSettingsTabKeydown);

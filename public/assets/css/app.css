@@ -496,31 +496,52 @@ button:disabled { cursor: default; opacity: 0.45; }
 .dialog-header .eyebrow { margin-bottom: 4px; }
 .dialog-header h2 { margin: 0; font-size: 28px; letter-spacing: -0.05em; }
 
-.settings-dialog { max-width: 500px; }
-.settings-form { gap: 16px; }
-.settings-tabs {
-  display: flex;
-  gap: 5px;
-  margin: 0 -20px;
-  padding: 0 20px 9px;
-  overflow-x: auto;
-  border-bottom: 1px solid var(--line);
-  scrollbar-width: none;
+.settings-dialog { max-width: 500px; overflow-x: hidden; }
+.settings-form {
+  width: 100%;
+  height: min(90dvh, 780px);
+  min-width: 0;
+  gap: 16px;
+  overflow: hidden;
 }
-.settings-tabs::-webkit-scrollbar { display: none; }
+.settings-form .dialog-header,
+.settings-tabs,
+#save-settings { flex: 0 0 auto; }
+.settings-tabs {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  width: 100%;
+  min-width: 0;
+  gap: 5px;
+  margin: 0;
+  padding: 0 0 9px;
+  overflow: hidden;
+  border-bottom: 1px solid var(--line);
+}
 .settings-tabs button {
-  flex: 0 0 auto;
+  min-width: 0;
   min-height: 36px;
-  padding: 0 12px;
+  padding: 0 4px;
   border-radius: 999px;
   background: transparent;
   color: var(--muted);
-  font-size: 10px;
+  font-size: clamp(8px, 2.5vw, 10px);
   font-weight: 760;
+  white-space: nowrap;
 }
 .settings-tabs button[aria-selected="true"] { background: var(--ink); color: var(--surface); }
-.settings-panels { min-height: 260px; }
-.settings-panel { display: grid; gap: 18px; }
+.settings-panels {
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.settings-panel { display: grid; width: 100%; min-width: 0; gap: 18px; padding-bottom: 2px; }
+.settings-panel > * { min-width: 0; }
+#save-settings { margin-top: 0; }
 .section-heading { display: grid; gap: 5px; }
 .section-heading h3,
 .section-heading p { margin: 0; }
