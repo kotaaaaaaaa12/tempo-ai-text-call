@@ -5,7 +5,7 @@ import test from "node:test";
 test("every element requested by the app exists in the document", async () => {
   const [html, app] = await Promise.all([
     readFile(new URL("../public/index.html", import.meta.url), "utf8"),
-    readFile(new URL("../public/app.js", import.meta.url), "utf8")
+    readFile(new URL("../src/client/app.js", import.meta.url), "utf8")
   ]);
 
   const documentIds = new Set(Array.from(html.matchAll(/\bid="([^"]+)"/g), (match) => match[1]));

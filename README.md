@@ -1,22 +1,22 @@
-# tempoo
+# tempo
 
-`tempo` is a mobile-first AI text-call web app. The user types without a send button, the current turn is submitted after a short pause, and the AI reply appears incrementally through the OpenAI Responses API.
+`tempo` is a mobile-first live AI text-call app. The user types without a send button, the current turn is submitted after a short pause, and the reply streams in through the OpenAI Responses API.
 
-The frontend and API run from one Cloudflare Worker deployment. The OpenAI API key remains in a Worker secret and is never sent to the browser.
+The frontend and API run from one Cloudflare Worker. Google sign-in and synchronized personalization use Supabase Auth and Postgres Row Level Security.
 
 ## Features
 
+- Minimal mobile interface with light and dark themes
 - Send-button-free text calls with a 900 ms pause detector
-- OpenAI Responses API streaming over server-sent events
-- Japanese IME composition handling with a 1,100 ms fallback for iOS Safari
+- Japanese IME handling with a 1,100 ms fallback for iOS Safari
 - A persistent live draft that stays editable until the user clears it
-- Interruption support with `AbortController`
-- Mobile Safari viewport and safe-area handling
-- Auto, light, and dark themes
-- Three conversation tones
-- In-memory transcript with copy support
-- Same-origin checks, input validation, security headers, a safety identifier, and a basic per-isolate rate limit
-- No service worker, which avoids stale CSS and JavaScript after a deployment
+- OpenAI Responses API streaming over server-sent events
+- Optional Google sign-in with PKCE
+- Guest settings stored only on the device
+- Signed-in settings synchronized between devices
+- Personalized user name, AI name, tone, reply length, and remembered context
+- Conversation transcripts kept only in memory and never uploaded to Supabase
+- Row Level Security so each account can access only its own profile
 
 ## Local setup
 
@@ -27,13 +27,45 @@ npm install
 cp .dev.vars.example .dev.vars
 ```
 
-Edit `.dev.vars` and set `OPENAI_API_KEY`, then start the Worker:
+Set `OPENAI_API_KEY` in `.dev.vars`, then run:
 
 ```bash
 npm run dev
 ```
 
-Open the local URL printed by Wrangler. The default model is `gpt-5.6-luna`; override it with `OPENAI_MODEL` if needed.
+Google login is optional. The app continues to work in guest mode until Supabase is configured.
+
+## Google sign-in setup
+
+### 1. Create the profile table
+
+Create a Supabase project. Open its SQL Editor, paste the entire contents of `supabase/schema.sql`, and run it. The included policies allow signed-in users to access only their own profile row.
+
+### 2. Configure Google
+
+In Google Auth Platform:
+
+1. Create an OAuth client with the **Web application** type.
+2. Add the deployed Worker origin under **Authorized JavaScript origins**. Example: `https://tempo-ai-text-call.example.workers.dev`.
+3. Add the Supabase callback shown on the Supabase Google provider page under **Authorized redirect URIs**. It normally looks like `https://YOUR_PROJECT_REF.supabase.co/auth/v1/callback`.
+4. Copy the Google Client ID and Client Secret into **Supabase > Authentication > Sign In / Providers > Google**, then enable the provider.
+
+In **Supabase > Authentication > URL Configuration**:
+
+- Set **Site URL** to the deployed Worker URL.
+- Add the same deployed Worker URL to **Redirect URLs**.
+- Add the local Wrangler URL only when testing Google login locally.
+
+### 3. Add Cloudflare runtime variables
+
+Copy the Project URL and publishable key from the Supabase project settings. In **Cloudflare > Worker > Settings > Variables and Secrets**, add:
+
+- `SUPABASE_URL` — for example `https://YOUR_PROJECT_REF.supabase.co`
+- `SUPABASE_PUBLISHABLE_KEY` — starts with `sb_publishable_` on new projects
+
+These two values are public browser configuration, not private server secrets. Keep `OPENAI_API_KEY` as an encrypted secret. Redeploy after adding the values.
+
+The older Supabase anonymous key also works under `SUPABASE_ANON_KEY`, but the publishable key is preferred.
 
 ## Checks
 
@@ -43,38 +75,31 @@ npm run check
 
 ## Deploy from GitHub
 
-This repository is ready for Cloudflare Workers Builds. No GitHub Actions workflow or local Wrangler login is required.
+This repository is ready for Cloudflare Workers Builds.
 
-1. Create a GitHub repository and put the extracted project files at its root.
-2. In Cloudflare, open **Workers & Pages**, create a Worker, and connect the GitHub repository.
+1. Put the extracted project files at the GitHub repository root.
+2. In Cloudflare, connect the repository to a Worker.
 3. Use these build settings:
    - Production branch: `main`
    - Build command: leave blank
-   - Deploy command: `npx wrangler deploy`
+   - Deploy command: `npm run deploy`
    - Non-production deploy command: `npx wrangler versions upload`
    - Root directory: `/`
-4. Keep the Worker name as `tempo-ai-text-call`, or change the `name` value in `wrangler.jsonc` to match it.
-5. Open the Worker's **Settings > Variables & Secrets** and add `OPENAI_API_KEY` as an encrypted runtime secret.
-6. Trigger another deployment after adding the secret.
+4. Keep the Worker name as `tempo-ai-text-call`, or update `name` in `wrangler.jsonc`.
+5. Add `OPENAI_API_KEY` as an encrypted runtime secret.
+6. Add the two Supabase runtime variables described above.
+7. Trigger another deployment.
 
-Do not add `OPENAI_API_KEY` as a build variable. Cloudflare build variables are unavailable to the Worker at runtime.
+The committed browser bundle allows the previous `npx wrangler deploy` command to work too. `npm run deploy` is recommended because it rebuilds the browser bundle before deployment.
 
-The default model is already configured in the code. To override it, add `OPENAI_MODEL` under runtime variables and secrets.
+## Personalization behavior
 
-Every push to `main` will deploy the production Worker. Non-production branches can produce preview versions when branch builds are enabled.
-
-## Architecture
-
-1. The browser keeps the current call and transcript in memory.
-2. After the user stops typing for 900 ms, the browser posts up to 12 recent turns to `/api/respond`. Active Japanese composition uses a 1,100 ms fallback so iOS Safari cannot block the request indefinitely.
-3. The Worker validates the request and calls `POST /v1/responses` with `stream: true`.
-4. The Worker passes the SSE stream through to the browser.
-5. The browser renders `response.output_text.delta` events as they arrive.
-6. The typed text remains in the input. Continuing to type updates the same user turn and replaces its earlier AI response instead of duplicating partial drafts in history.
-7. Clearing the input marks the start of a new user turn. New input also aborts an active response, which creates text-call-style interruption.
+- Guests keep settings in browser storage.
+- Google users synchronize settings through the `profiles` table.
+- The current settings are sent with each OpenAI request so the server can set the AI name, tone, reply length, and relevant user context.
+- Remembered text is treated as untrusted user background, not as system instructions.
+- Calls and transcripts are not stored in Supabase or OpenAI by this project. OpenAI requests use `store: false`.
 
 ## Production notes
 
-The included rate limit is intentionally small and in memory. Before a public launch, add authentication and a durable limiter with Cloudflare Durable Objects or KV. Also add usage budgets, abuse monitoring, and a moderation approach appropriate for streamed output. OpenAI notes that partial streamed output is harder to moderate than a completed response.
-
-The transcript is not persisted by this project. If history is added later, clearly disclose retention and deletion behavior before storing any conversation.
+The included rate limit is intentionally small and in memory. Before a public launch, add a durable limiter, usage budgets, abuse monitoring, and an appropriate moderation strategy for streamed output. Login is optional in this version, so it does not yet protect API spending by itself.

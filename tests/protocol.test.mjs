@@ -4,7 +4,12 @@ import { buildOpenAIRequest, validateChatBody } from "../src/protocol.js";
 
 test("validates and normalizes a chat body", () => {
   const result = validateChatBody({
-    tone: "thoughtful",
+    profile: {
+      aiName: "Pico",
+      tone: "thoughtful",
+      replyLength: "balanced",
+      displayName: "Kai"
+    },
     messages: [
       { role: "assistant", content: "Hello" },
       { role: "user", content: "  How are you?  " }
@@ -13,7 +18,9 @@ test("validates and normalizes a chat body", () => {
 
   assert.equal(result.ok, true);
   if (result.ok) {
-    assert.equal(result.value.tone, "thoughtful");
+    assert.equal(result.value.profile.tone, "thoughtful");
+    assert.equal(result.value.profile.aiName, "Pico");
+    assert.equal(result.value.profile.replyLength, "balanced");
     assert.equal(result.value.messages[1].content, "How are you?");
   }
 });
@@ -34,7 +41,7 @@ test("rejects roles outside the public protocol", () => {
 
 test("builds a non-stored streaming request", () => {
   const validation = validateChatBody({
-    tone: "direct",
+    profile: { tone: "direct", replyLength: "short", memory: "Likes astronomy" },
     messages: [{ role: "user", content: "Test" }]
   });
   assert.equal(validation.ok, true);
@@ -44,5 +51,25 @@ test("builds a non-stored streaming request", () => {
   assert.equal(request.model, "gpt-5.6-luna");
   assert.equal(request.stream, true);
   assert.equal(request.store, false);
+  assert.equal(request.max_output_tokens, 120);
+  assert.match(request.instructions, /Likes astronomy/);
   assert.deepEqual(request.reasoning, { effort: "none" });
+});
+
+test("clips personalization fields and rejects unknown choices", () => {
+  const validation = validateChatBody({
+    profile: {
+      aiName: "",
+      tone: "hostile",
+      replyLength: "essay",
+      memory: "x".repeat(700)
+    },
+    messages: [{ role: "user", content: "Test" }]
+  });
+  assert.equal(validation.ok, true);
+  if (!validation.ok) return;
+  assert.equal(validation.value.profile.aiName, "Nova");
+  assert.equal(validation.value.profile.tone, "casual");
+  assert.equal(validation.value.profile.replyLength, "short");
+  assert.equal(validation.value.profile.memory.length, 500);
 });

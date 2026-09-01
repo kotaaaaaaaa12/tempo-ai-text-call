@@ -1,18 +1,23 @@
 {
   "name": "tempo-ai-text-call",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "wrangler dev",
-    "deploy": "wrangler deploy",
+    "build": "esbuild src/client/app.js --bundle --format=esm --platform=browser --target=es2022 --minify --outfile=public/app.js",
+    "dev": "npm run build && wrangler dev",
+    "deploy": "npm run build && wrangler deploy",
     "typecheck": "tsc --noEmit",
-    "syntaxcheck": "node --check public/app.js && node --check public/sse.js",
+    "syntaxcheck": "node --check src/client/app.js && node --check public/app.js && node --check public/sse.js",
     "test": "node --test",
-    "check": "npm run typecheck && npm run syntaxcheck && npm test"
+    "check": "npm run build && npm run typecheck && npm run syntaxcheck && npm test"
   },
   "devDependencies": {
+    "esbuild": "^0.25.12",
     "typescript": "^5.9.2",
     "wrangler": "^4.33.1"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.112.4"
   }
 }

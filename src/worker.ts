@@ -8,6 +8,9 @@ interface Env {
   ASSETS: AssetBinding;
   OPENAI_API_KEY?: string;
   OPENAI_MODEL?: string;
+  SUPABASE_URL?: string;
+  SUPABASE_PUBLISHABLE_KEY?: string;
+  SUPABASE_ANON_KEY?: string;
 }
 
 const OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses";
@@ -21,7 +24,7 @@ const rateLimits = new Map<string, { count: number; resetAt: number }>();
 const SECURITY_HEADERS: Record<string, string> = {
   "Content-Security-Policy": [
     "default-src 'self'",
-    "connect-src 'self'",
+    "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
     "img-src 'self' data:",
     "style-src 'self'",
     "style-src-attr 'unsafe-inline'",
@@ -201,7 +204,21 @@ export default {
     if (url.pathname === "/api/health") {
       return json({
         ready: Boolean(env.OPENAI_API_KEY),
-        model: env.OPENAI_MODEL?.trim() || DEFAULT_MODEL
+        model: env.OPENAI_MODEL?.trim() || DEFAULT_MODEL,
+        authReady: Boolean(env.SUPABASE_URL && (env.SUPABASE_PUBLISHABLE_KEY || env.SUPABASE_ANON_KEY))
+      });
+    }
+
+    if (url.pathname === "/api/config") {
+      const supabaseUrl = env.SUPABASE_URL?.trim() || "";
+      const publishableKey = env.SUPABASE_PUBLISHABLE_KEY?.trim() || env.SUPABASE_ANON_KEY?.trim() || "";
+      const ready = Boolean(supabaseUrl && publishableKey);
+      return json({
+        auth: {
+          ready,
+          url: ready ? supabaseUrl : null,
+          publishableKey: ready ? publishableKey : null
+        }
       });
     }
 
