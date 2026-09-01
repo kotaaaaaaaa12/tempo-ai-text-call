@@ -6,8 +6,18 @@ create table if not exists public.profiles (
   reply_length text not null default 'short' check (reply_length in ('short', 'balanced', 'detailed')),
   memory text not null default '' check (char_length(memory) <= 500),
   theme text not null default 'auto' check (theme in ('auto', 'light', 'dark')),
+  language text not null default 'auto' check (language in ('auto', 'en', 'ja')),
   updated_at timestamptz not null default now()
 );
+
+alter table public.profiles
+add column if not exists language text not null default 'auto';
+
+alter table public.profiles
+drop constraint if exists profiles_language_check;
+
+alter table public.profiles
+add constraint profiles_language_check check (language in ('auto', 'en', 'ja'));
 
 alter table public.profiles enable row level security;
 

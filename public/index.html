@@ -9,8 +9,8 @@
     <title>tempo — AI text calls</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="manifest" href="/manifest.webmanifest">
-    <link rel="stylesheet" href="/styles.css?v=6">
-    <script type="module" src="/app.js?v=6"></script>
+    <link rel="stylesheet" href="/styles.css?v=7">
+    <script type="module" src="/app.js?v=7"></script>
   </head>
   <body>
     <main class="app-shell" id="app">
@@ -19,19 +19,22 @@
           <a class="wordmark" href="/" aria-label="tempo home">tempo</a>
           <div class="header-actions">
             <button class="account-button" id="account-button" type="button">Sign in</button>
-            <button class="icon-button" id="settings-button" type="button" aria-label="Open settings">
-              <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 15.4a3.4 3.4 0 1 0 0-6.8 3.4 3.4 0 0 0 0 6.8Zm7-3.4 1.5-1.2-1.8-3.1-1.9.7a7.6 7.6 0 0 0-1.7-1L14.8 5h-3.6l-.3 2.4a7.6 7.6 0 0 0-1.7 1l-1.9-.7-1.8 3.1L7 12l-1.5 1.2 1.8 3.1 1.9-.7a7.6 7.6 0 0 0 1.7 1l.3 2.4h3.6l.3-2.4a7.6 7.6 0 0 0 1.7-1l1.9.7 1.8-3.1L19 12Z"/></svg>
+            <button class="icon-button" id="settings-button" type="button" aria-label="Open settings" data-i18n-aria-label="openSettings">
+              <svg aria-hidden="true" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M12.2 2h-.4a2 2 0 0 0-2 2v.2a2 2 0 0 1-1 1.7l-.4.3a2 2 0 0 1-2 0l-.2-.1a2 2 0 0 0-2.7.7l-.2.4A2 2 0 0 0 4 9.9l.2.1a2 2 0 0 1 1 1.7v.6a2 2 0 0 1-1 1.7l-.2.1a2 2 0 0 0-.7 2.7l.2.4a2 2 0 0 0 2.7.7l.2-.1a2 2 0 0 1 2 0l.4.3a2 2 0 0 1 1 1.7v.2a2 2 0 0 0 2 2h.4a2 2 0 0 0 2-2v-.2a2 2 0 0 1 1-1.7l.4-.3a2 2 0 0 1 2 0l.2.1a2 2 0 0 0 2.7-.7l.2-.4a2 2 0 0 0-.7-2.7l-.2-.1a2 2 0 0 1-1-1.7v-.6a2 2 0 0 1 1-1.7l.2-.1a2 2 0 0 0 .7-2.7l-.2-.4a2 2 0 0 0-2.7-.7l-.2.1a2 2 0 0 1-2 0l-.4-.3a2 2 0 0 1-1-1.7V4a2 2 0 0 0-2-2Z"/>
+              </svg>
             </button>
           </div>
         </header>
 
         <div class="start-content">
           <div class="presence-mark" aria-hidden="true"><span></span></div>
-          <p class="eyebrow">Live AI text call</p>
-          <h1 id="start-title">Talk to <span data-ai-name>Nova</span>.</h1>
-          <p class="lede">Just type. Your AI replies when you pause.</p>
-          <button class="primary-button" id="start-call" type="button">Start call</button>
-          <p class="privacy-note">Conversations are not saved.</p>
+          <p class="eyebrow" data-i18n="liveCall">Live AI text call</p>
+          <h1 id="start-title">Talk to Nova.</h1>
+          <p class="lede" data-i18n="homeLede">Just type. Your AI replies when you pause.</p>
+          <button class="primary-button" id="start-call" type="button" data-i18n="startCall">Start call</button>
+          <p class="privacy-note" data-i18n="notSaved">Conversations are not saved.</p>
         </div>
       </section>
 
@@ -42,7 +45,7 @@
             <p><span class="presence-dot"></span><span id="connection-label">Connected</span></p>
           </div>
           <time id="call-timer" datetime="PT0S">00:00</time>
-          <button class="hangup-button" id="end-call" type="button" aria-label="End call">
+          <button class="hangup-button" id="end-call" type="button" aria-label="End call" data-i18n-aria-label="endCall">
             <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 14.5c4.6-3.4 9.4-3.4 14 0m-11.2-.3v3m8.4-3v3"/></svg>
           </button>
         </header>
@@ -52,16 +55,14 @@
             <p class="speaker-label" id="ai-label" data-ai-name>Nova</p>
             <div class="live-copy ai-copy" id="ai-copy">Hey — what’s on your mind?</div>
           </section>
-
           <p class="sr-status" id="sr-status" aria-live="polite">Ready</p>
-
           <section class="speaker-panel user-panel" id="user-panel" aria-labelledby="user-label">
             <div class="user-label-row">
-              <p class="speaker-label" id="user-label">You</p>
+              <p class="speaker-label" id="user-label" data-i18n="you">You</p>
               <span id="character-count">0 / 280</span>
             </div>
-            <textarea id="message-input" rows="3" maxlength="280" enterkeyhint="send" autocapitalize="sentences" autocomplete="off" spellcheck="true" placeholder="Start typing…" aria-label="Your message"></textarea>
-            <p class="send-hint" id="send-hint"><span></span>Updates after you pause</p>
+            <textarea id="message-input" rows="3" maxlength="280" enterkeyhint="send" autocapitalize="sentences" autocomplete="off" spellcheck="true" placeholder="Start typing…" data-i18n-placeholder="startTyping" aria-label="Your message" data-i18n-aria-label="yourMessage"></textarea>
+            <p class="send-hint" id="send-hint"><span></span><b data-i18n="updatesAfterPause">Updates after you pause</b></p>
           </section>
         </div>
       </section>
@@ -69,72 +70,88 @@
       <section class="screen end-screen" id="end-screen" aria-labelledby="end-title" inert>
         <header class="app-header"><span class="wordmark">tempo</span></header>
         <div class="end-content">
-          <p class="eyebrow">Call ended</p>
-          <h1 id="end-title">That’s a wrap.</h1>
+          <p class="eyebrow" data-i18n="callEnded">Call ended</p>
+          <h1 id="end-title" data-i18n="wrapTitle">That’s a wrap.</h1>
           <div class="call-stats">
-            <div><strong id="final-duration">00:00</strong><span>Duration</span></div>
-            <div><strong id="final-turns">0</strong><span>Turns</span></div>
+            <div><strong id="final-duration">00:00</strong><span data-i18n="duration">Duration</span></div>
+            <div><strong id="final-turns">0</strong><span data-i18n="turns">Turns</span></div>
           </div>
           <details class="transcript-details">
-            <summary>Transcript</summary>
+            <summary data-i18n="transcript">Transcript</summary>
             <div class="transcript" id="transcript"></div>
           </details>
           <div class="end-actions">
-            <button class="primary-button" id="call-again" type="button">Call again</button>
-            <button class="secondary-button" id="copy-transcript" type="button">Copy transcript</button>
+            <button class="primary-button" id="call-again" type="button" data-i18n="callAgain">Call again</button>
+            <button class="secondary-button" id="copy-transcript" type="button" data-i18n="copyTranscript">Copy transcript</button>
           </div>
         </div>
       </section>
     </main>
 
-    <dialog class="settings-dialog" id="settings-dialog" aria-labelledby="settings-title" tabindex="-1">
-      <form class="settings-form" id="settings-form">
-        <header class="settings-header">
-          <div><p class="eyebrow">Personalize</p><h2 id="settings-title">Settings</h2></div>
-          <button class="icon-button" id="close-settings" type="button" aria-label="Close settings">
+    <dialog class="app-dialog account-dialog" id="account-dialog" aria-labelledby="account-title" tabindex="-1">
+      <div class="dialog-form account-form">
+        <header class="dialog-header">
+          <div><p class="eyebrow" data-i18n="accountEyebrow">Account</p><h2 id="account-title" data-i18n="accountTitle">Sign in</h2></div>
+          <button class="icon-button" id="close-account" type="button" aria-label="Close account" data-i18n-aria-label="closeAccount">
+            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg>
+          </button>
+        </header>
+        <section class="account-card">
+          <div><strong id="account-name">Guest</strong><span id="account-status">Settings stay on this device</span></div>
+          <button class="google-button" id="google-sign-in" type="button"><b>G</b><span data-i18n="continueGoogle">Continue with Google</span></button>
+          <button class="text-button is-hidden" id="sign-out" type="button" data-i18n="signOut">Sign out</button>
+        </section>
+        <p class="dialog-note" data-i18n="accountNote">Sign in to sync personalization between devices.</p>
+      </div>
+    </dialog>
+
+    <dialog class="app-dialog settings-dialog" id="settings-dialog" aria-labelledby="settings-title" tabindex="-1">
+      <form class="dialog-form settings-form" id="settings-form">
+        <header class="dialog-header">
+          <div><p class="eyebrow" data-i18n="personalize">Personalize</p><h2 id="settings-title" data-i18n="settings">Settings</h2></div>
+          <button class="icon-button" id="close-settings" type="button" aria-label="Close settings" data-i18n-aria-label="closeSettings">
             <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg>
           </button>
         </header>
 
-        <section class="account-card">
-          <div><strong id="account-name">Guest</strong><span id="account-status">Settings stay on this device</span></div>
-          <button class="google-button" id="google-sign-in" type="button"><b>G</b> Continue with Google</button>
-          <button class="text-button is-hidden" id="sign-out" type="button">Sign out</button>
-        </section>
-
-        <label class="field"><span>What should the AI call you?</span><input id="display-name-input" name="displayName" maxlength="40" autocomplete="nickname" placeholder="Your name"></label>
-        <label class="field"><span>AI name</span><input id="ai-name-input" name="aiName" maxlength="40" autocomplete="off" value="Nova"></label>
+        <label class="field"><span data-i18n="callYou">What should the AI call you?</span><input id="display-name-input" name="displayName" maxlength="40" autocomplete="nickname" placeholder="Your name" data-i18n-placeholder="yourName"></label>
+        <label class="field"><span data-i18n="aiName">AI name</span><input id="ai-name-input" name="aiName" maxlength="40" autocomplete="off" value="Nova"></label>
 
         <fieldset class="choice-fieldset">
-          <legend>Tone</legend>
+          <legend data-i18n="tone">Tone</legend>
           <div class="choice-row" id="tone-control">
-            <button type="button" data-tone="casual" aria-pressed="true">Casual</button>
-            <button type="button" data-tone="thoughtful" aria-pressed="false">Thoughtful</button>
-            <button type="button" data-tone="direct" aria-pressed="false">Direct</button>
+            <button type="button" data-tone="casual" aria-pressed="true" data-i18n="casual">Casual</button>
+            <button type="button" data-tone="thoughtful" aria-pressed="false" data-i18n="thoughtful">Thoughtful</button>
+            <button type="button" data-tone="direct" aria-pressed="false" data-i18n="direct">Direct</button>
           </div>
         </fieldset>
 
         <fieldset class="choice-fieldset">
-          <legend>Reply length</legend>
+          <legend data-i18n="replyLength">Reply length</legend>
           <div class="choice-row" id="length-control">
-            <button type="button" data-length="short" aria-pressed="true">Short</button>
-            <button type="button" data-length="balanced" aria-pressed="false">Balanced</button>
-            <button type="button" data-length="detailed" aria-pressed="false">Detailed</button>
+            <button type="button" data-length="short" aria-pressed="true" data-i18n="short">Short</button>
+            <button type="button" data-length="balanced" aria-pressed="false" data-i18n="balanced">Balanced</button>
+            <button type="button" data-length="detailed" aria-pressed="false" data-i18n="detailed">Detailed</button>
           </div>
         </fieldset>
 
         <label class="field">
-          <span>Things to remember</span>
-          <textarea id="memory-input" name="memory" rows="4" maxlength="500" placeholder="Interests, goals, preferences…"></textarea>
-          <small>Only saved when you choose Save. Conversation transcripts are never included.</small>
+          <span data-i18n="remember">Things to remember</span>
+          <textarea id="memory-input" name="memory" rows="4" maxlength="500" placeholder="Interests, goals, preferences…" data-i18n-placeholder="memoryPlaceholder"></textarea>
+          <small data-i18n="memoryNote">Only saved when you choose Save. Conversation transcripts are never included.</small>
         </label>
 
         <label class="theme-row">
-          <span>Appearance</span>
-          <select id="theme-select" name="theme"><option value="auto">Auto</option><option value="light">Light</option><option value="dark">Dark</option></select>
+          <span data-i18n="language">Language</span>
+          <select id="language-select" name="language"><option value="auto">Auto</option><option value="en">English</option><option value="ja">日本語</option></select>
         </label>
 
-        <button class="primary-button" id="save-settings" type="submit">Save settings</button>
+        <label class="theme-row">
+          <span data-i18n="appearance">Appearance</span>
+          <select id="theme-select" name="theme"><option value="auto" data-i18n="auto">Auto</option><option value="light" data-i18n="light">Light</option><option value="dark" data-i18n="dark">Dark</option></select>
+        </label>
+
+        <button class="primary-button" id="save-settings" type="submit" data-i18n="saveSettings">Save settings</button>
       </form>
     </dialog>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>

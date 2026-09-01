@@ -7,6 +7,7 @@ The frontend and API run from one Cloudflare Worker. Google sign-in and synchron
 ## Features
 
 - Minimal mobile interface with light and dark themes
+- English and Japanese UI with Auto, English, and Japanese language settings
 - Send-button-free text calls with a 900 ms pause detector
 - Japanese IME handling with a 1,100 ms fallback for iOS Safari
 - A persistent live draft that stays editable until the user clears it
@@ -14,7 +15,7 @@ The frontend and API run from one Cloudflare Worker. Google sign-in and synchron
 - Optional Google sign-in with PKCE
 - Guest settings stored only on the device
 - Signed-in settings synchronized between devices
-- Personalized user name, AI name, tone, reply length, and remembered context
+- Personalized user name, AI name, tone, reply length, remembered context, and language
 - Conversation transcripts kept only in memory and never uploaded to Supabase
 - Row Level Security so each account can access only its own profile
 
@@ -40,6 +41,8 @@ Google login is optional. The app continues to work in guest mode until Supabase
 ### 1. Create the profile table
 
 Create a Supabase project. Open its SQL Editor, paste the entire contents of `supabase/schema.sql`, and run it. The included policies allow signed-in users to access only their own profile row.
+
+Run the same file again after updating an existing deployment. It safely adds the synchronized language column when the profile table already exists.
 
 ### 2. Configure Google
 
@@ -98,6 +101,7 @@ The committed browser bundle allows the previous `npx wrangler deploy` command t
 
 - Guests keep settings in browser storage.
 - Google users synchronize settings through the `profiles` table.
+- Auto language uses Japanese only when the browser's primary language is Japanese. Every other browser language uses English.
 - The current settings are sent with each OpenAI request so the server can set the AI name, tone, reply length, and relevant user context.
 - Remembered text is treated as untrusted user background, not as system instructions.
 - Calls and transcripts are not stored in Supabase or OpenAI by this project. OpenAI requests use `store: false`.

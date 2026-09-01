@@ -427,7 +427,7 @@ button:disabled { cursor: default; opacity: 0.45; }
 .transcript-item p { margin: 0; overflow-wrap: anywhere; }
 .end-actions { display: grid; gap: 9px; width: 100%; margin-top: auto; padding-top: 24px; }
 
-.settings-dialog {
+.app-dialog {
   width: min(100% - 20px, 480px);
   max-height: min(90dvh, 780px);
   margin: auto auto max(10px, env(safe-area-inset-bottom));
@@ -440,11 +440,11 @@ button:disabled { cursor: default; opacity: 0.45; }
   box-shadow: 0 28px 90px rgba(0, 0, 0, 0.28);
 }
 
-.settings-dialog:focus { outline: none; }
+.app-dialog:focus { outline: none; }
 
-.settings-dialog::backdrop { background: rgba(0, 0, 0, 0.46); backdrop-filter: blur(3px); }
+.app-dialog::backdrop { background: rgba(0, 0, 0, 0.46); backdrop-filter: blur(3px); }
 
-.settings-form {
+.dialog-form {
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -453,9 +453,13 @@ button:disabled { cursor: default; opacity: 0.45; }
   overflow-y: auto;
 }
 
-.settings-header { display: flex; align-items: flex-start; justify-content: space-between; }
-.settings-header .eyebrow { margin-bottom: 4px; }
-.settings-header h2 { margin: 0; font-size: 28px; letter-spacing: -0.05em; }
+.dialog-header { display: flex; align-items: flex-start; justify-content: space-between; }
+.dialog-header .eyebrow { margin-bottom: 4px; }
+.dialog-header h2 { margin: 0; font-size: 28px; letter-spacing: -0.05em; }
+
+.account-dialog { max-width: 420px; }
+.account-form { gap: 18px; }
+.dialog-note { margin: 0; color: var(--muted); font-size: 10px; line-height: 1.5; }
 
 .account-card {
   display: grid;
@@ -473,6 +477,8 @@ button:disabled { cursor: default; opacity: 0.45; }
 .google-button b { display: grid; width: 22px; height: 22px; border: 1px solid var(--line); border-radius: 50%; color: #4285f4; font-size: 12px; place-items: center; }
 .text-button { justify-self: start; min-height: 34px; padding: 0; background: transparent; color: var(--muted); }
 .is-hidden { display: none !important; }
+
+.send-hint b { font-weight: inherit; }
 
 .field { display: flex; flex-direction: column; gap: 7px; }
 .field > span,
@@ -527,7 +533,7 @@ button:disabled { cursor: default; opacity: 0.45; }
 @media (min-width: 600px) {
   body { padding: 20px; }
   .app-shell { height: min(calc(100dvh - 40px), 850px); border: 1px solid var(--line); border-radius: 28px; box-shadow: 0 20px 70px rgba(0, 0, 0, 0.12); }
-  .settings-dialog { margin: auto; }
+  .app-dialog { margin: auto; }
 }
 
 @media (max-height: 620px) {

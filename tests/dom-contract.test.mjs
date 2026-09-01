@@ -31,6 +31,21 @@ test("Google sign-in remains actionable and the settings dialog can receive Safa
   ]);
 
   assert.match(html, /<dialog[^>]+id="settings-dialog"[^>]+tabindex="-1"/);
+  assert.match(html, /<dialog[^>]+id="account-dialog"[^>]+tabindex="-1"/);
   assert.doesNotMatch(html, /id="google-sign-in"[^>]+disabled/);
   assert.doesNotMatch(app, /googleSignIn\.disabled\s*=/);
+});
+
+test("account and settings open separate dialogs with three language choices", async () => {
+  const [html, app] = await Promise.all([
+    readFile(new URL("../public/index.html", import.meta.url), "utf8"),
+    readFile(new URL("../src/client/app.js", import.meta.url), "utf8")
+  ]);
+
+  assert.match(app, /accountButton\.addEventListener\("click", openAccount\)/);
+  assert.match(app, /settingsButton\.addEventListener\("click", openSettings\)/);
+  assert.match(html, /<option value="auto">Auto<\/option>/);
+  assert.match(html, /<option value="en">English<\/option>/);
+  assert.match(html, /<option value="ja">日本語<\/option>/);
+  assert.match(app, /startsWith\("ja"\) \? "ja" : "en"/);
 });

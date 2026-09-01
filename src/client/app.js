@@ -9,6 +9,7 @@ const SETTINGS_KEY = "tempo-settings-v2";
 const VALID_TONES = new Set(["casual", "thoughtful", "direct"]);
 const VALID_LENGTHS = new Set(["short", "balanced", "detailed"]);
 const VALID_THEMES = new Set(["auto", "light", "dark"]);
+const VALID_LANGUAGES = new Set(["auto", "en", "ja"]);
 
 const DEFAULT_SETTINGS = Object.freeze({
   displayName: "",
@@ -16,8 +17,178 @@ const DEFAULT_SETTINGS = Object.freeze({
   tone: "casual",
   replyLength: "short",
   memory: "",
-  theme: "auto"
+  theme: "auto",
+  language: "auto"
 });
+
+const TRANSLATIONS = {
+  en: {
+    documentTitle: "tempo — AI text calls",
+    metaDescription: "A live AI text call that replies as you pause.",
+    liveCall: "Live AI text call",
+    talkTo: "Talk to {name}.",
+    homeLede: "Just type. Your AI replies when you pause.",
+    startCall: "Start call",
+    notSaved: "Conversations are not saved.",
+    openSettings: "Open settings",
+    endCall: "End call",
+    you: "You",
+    startTyping: "Start typing…",
+    yourMessage: "Your message",
+    updatesAfterPause: "Updates after you pause",
+    callEnded: "Call ended",
+    wrapTitle: "That’s a wrap.",
+    duration: "Duration",
+    turns: "Turns",
+    transcript: "Transcript",
+    callAgain: "Call again",
+    copyTranscript: "Copy transcript",
+    accountEyebrow: "Account",
+    accountTitle: "Sign in",
+    accountPanelTitle: "Account",
+    closeAccount: "Close account",
+    continueGoogle: "Continue with Google",
+    signOut: "Sign out",
+    accountNote: "Sign in to sync personalization between devices.",
+    personalize: "Personalize",
+    settings: "Settings",
+    closeSettings: "Close settings",
+    callYou: "What should the AI call you?",
+    yourName: "Your name",
+    aiName: "AI name",
+    tone: "Tone",
+    casual: "Casual",
+    thoughtful: "Thoughtful",
+    direct: "Direct",
+    replyLength: "Reply length",
+    short: "Short",
+    balanced: "Balanced",
+    detailed: "Detailed",
+    remember: "Things to remember",
+    memoryPlaceholder: "Interests, goals, preferences…",
+    memoryNote: "Only saved when you choose Save. Conversation transcripts are never included.",
+    language: "Language",
+    appearance: "Appearance",
+    auto: "Auto",
+    light: "Light",
+    dark: "Dark",
+    saveSettings: "Save settings",
+    connected: "Connected",
+    connectionLost: "Connection lost",
+    openingNamed: "Hey {name} — what’s on your mind?",
+    opening: "Hey — what’s on your mind?",
+    guest: "Guest",
+    deviceOnly: "Settings stay on this device",
+    checkingSignIn: "Checking Google sign-in…",
+    syncOn: "Personalization sync is on",
+    googleAccount: "Google account",
+    signedInNeedsSchema: "Signed in; run supabase/schema.sql to sync",
+    localSaved: "Settings saved on this device",
+    synced: "Settings synced",
+    cloudFailed: "Saved on this device; cloud sync failed",
+    signedOut: "Signed out",
+    transcriptCopied: "Transcript copied",
+    transcriptCopyFailed: "Could not copy the transcript",
+    apiMissing: "The API key is not connected to this Worker yet.",
+    apiMissingToast: "Add OPENAI_API_KEY under this Worker's runtime secrets, then redeploy.",
+    workerUnavailable: "I could not reach the Worker API.",
+    replyConnectionLost: "I lost the connection. Keep typing to try again.",
+    responseUnavailable: "The response service is unavailable.",
+    typingFast: "You are typing a little too fast. Try again in a moment.",
+    callConnected: "Call connected",
+    connectionRestored: "Connection restored",
+    thinking: "{name} is thinking",
+    replying: "{name} is replying",
+    stopped: "{name} stopped replying",
+    finished: "{name} finished replying",
+    authMissing: "Missing Cloudflare runtime variable: {names}",
+    authSetupError: "Google sign-in setup error: {message}",
+    authLoadError: "Google sign-in setup could not be loaded"
+  },
+  ja: {
+    documentTitle: "tempo — AI文字通話",
+    metaDescription: "入力が止まるとAIが返事するリアルタイム文字通話。",
+    liveCall: "リアルタイムAI文字通話",
+    talkTo: "{name}と話そう。",
+    homeLede: "文字を打つだけ。入力が止まるとAIが返事します。",
+    startCall: "通話を始める",
+    notSaved: "会話内容は保存されません。",
+    openSettings: "設定を開く",
+    endCall: "通話を終了",
+    you: "あなた",
+    startTyping: "入力してみよう…",
+    yourMessage: "あなたのメッセージ",
+    updatesAfterPause: "入力が止まると更新します",
+    callEnded: "通話終了",
+    wrapTitle: "おつかれさま。",
+    duration: "通話時間",
+    turns: "ターン数",
+    transcript: "会話ログ",
+    callAgain: "もう一度話す",
+    copyTranscript: "会話ログをコピー",
+    accountEyebrow: "アカウント",
+    accountTitle: "ログイン",
+    accountPanelTitle: "アカウント",
+    closeAccount: "アカウント画面を閉じる",
+    continueGoogle: "Googleで続ける",
+    signOut: "ログアウト",
+    accountNote: "ログインすると端末間でパーソナライズ設定を同期できます。",
+    personalize: "パーソナライズ",
+    settings: "設定",
+    closeSettings: "設定を閉じる",
+    callYou: "AIから何と呼ばれたい？",
+    yourName: "あなたの名前",
+    aiName: "AIの名前",
+    tone: "話し方",
+    casual: "カジュアル",
+    thoughtful: "落ち着き",
+    direct: "率直",
+    replyLength: "返答の長さ",
+    short: "短め",
+    balanced: "ふつう",
+    detailed: "詳しく",
+    remember: "覚えてほしいこと",
+    memoryPlaceholder: "興味、目標、好みなど…",
+    memoryNote: "「設定を保存」を押した時だけ保存します。会話ログは含まれません。",
+    language: "言語",
+    appearance: "外観",
+    auto: "自動",
+    light: "ライト",
+    dark: "ダーク",
+    saveSettings: "設定を保存",
+    connected: "接続済み",
+    connectionLost: "接続が切れました",
+    openingNamed: "やあ、{name}。今日は何を話す？",
+    opening: "やあ。今日は何を話す？",
+    guest: "ゲスト",
+    deviceOnly: "設定はこの端末に保存されます",
+    checkingSignIn: "Googleログインを確認中…",
+    syncOn: "パーソナライズ設定を同期中",
+    googleAccount: "Googleアカウント",
+    signedInNeedsSchema: "ログイン済み。同期にはsupabase/schema.sqlの実行が必要です",
+    localSaved: "この端末に設定を保存しました",
+    synced: "設定を同期しました",
+    cloudFailed: "端末には保存しましたが、同期に失敗しました",
+    signedOut: "ログアウトしました",
+    transcriptCopied: "会話ログをコピーしました",
+    transcriptCopyFailed: "会話ログをコピーできませんでした",
+    apiMissing: "このWorkerにAPIキーが接続されていません。",
+    apiMissingToast: "WorkerのランタイムSecretにOPENAI_API_KEYを追加して再デプロイしてください。",
+    workerUnavailable: "Worker APIに接続できませんでした。",
+    replyConnectionLost: "接続が切れました。入力を続けると再試行します。",
+    responseUnavailable: "現在、応答サービスを利用できません。",
+    typingFast: "入力が少し速すぎます。少し待って試してください。",
+    callConnected: "通話に接続しました",
+    connectionRestored: "接続が戻りました",
+    thinking: "{name}が考えています",
+    replying: "{name}が返答しています",
+    stopped: "{name}が返答を停止しました",
+    finished: "{name}が返答しました",
+    authMissing: "Cloudflareのランタイム変数が見つかりません: {names}",
+    authSetupError: "Googleログインの設定エラー: {message}",
+    authLoadError: "Googleログイン設定を読み込めませんでした"
+  }
+};
 
 const elements = {
   screens: {
@@ -26,6 +197,9 @@ const elements = {
     end: document.querySelector("#end-screen")
   },
   accountButton: document.querySelector("#account-button"),
+  accountDialog: document.querySelector("#account-dialog"),
+  accountTitle: document.querySelector("#account-title"),
+  closeAccount: document.querySelector("#close-account"),
   settingsButton: document.querySelector("#settings-button"),
   settingsDialog: document.querySelector("#settings-dialog"),
   settingsForm: document.querySelector("#settings-form"),
@@ -37,10 +211,12 @@ const elements = {
   displayNameInput: document.querySelector("#display-name-input"),
   aiNameInput: document.querySelector("#ai-name-input"),
   memoryInput: document.querySelector("#memory-input"),
+  languageSelect: document.querySelector("#language-select"),
   themeSelect: document.querySelector("#theme-select"),
   toneControl: document.querySelector("#tone-control"),
   lengthControl: document.querySelector("#length-control"),
   aiNameLabels: document.querySelectorAll("[data-ai-name]"),
+  startTitle: document.querySelector("#start-title"),
   startCall: document.querySelector("#start-call"),
   endCall: document.querySelector("#end-call"),
   callAgain: document.querySelector("#call-again"),
@@ -81,7 +257,8 @@ const state = {
   loadedProfileFor: "",
   authConfigured: false,
   authInitializing: false,
-  authProblem: ""
+  authProblem: null,
+  locale: "en"
 };
 
 function readPreference(key, fallback) {
@@ -110,7 +287,8 @@ function normalizeSettings(value) {
     tone: VALID_TONES.has(candidate.tone) ? candidate.tone : DEFAULT_SETTINGS.tone,
     replyLength: VALID_LENGTHS.has(candidate.replyLength) ? candidate.replyLength : DEFAULT_SETTINGS.replyLength,
     memory: typeof candidate.memory === "string" ? candidate.memory.trim().slice(0, 500) : "",
-    theme: VALID_THEMES.has(candidate.theme) ? candidate.theme : DEFAULT_SETTINGS.theme
+    theme: VALID_THEMES.has(candidate.theme) ? candidate.theme : DEFAULT_SETTINGS.theme,
+    language: VALID_LANGUAGES.has(candidate.language) ? candidate.language : DEFAULT_SETTINGS.language
   };
 }
 
@@ -137,14 +315,47 @@ function getClientId() {
   return value;
 }
 
+function resolveLocale(language) {
+  if (language === "ja") return "ja";
+  if (language === "en") return "en";
+  const browserLanguage = navigator.languages?.[0] || navigator.language || "en";
+  return String(browserLanguage).toLowerCase().startsWith("ja") ? "ja" : "en";
+}
+
+function translate(key, variables = {}) {
+  const template = TRANSLATIONS[state.locale]?.[key] ?? TRANSLATIONS.en[key] ?? key;
+  return template.replace(/\{(\w+)\}/g, (_match, name) => String(variables[name] ?? ""));
+}
+
+function applyTranslations() {
+  document.documentElement.lang = state.locale;
+  document.title = translate("documentTitle");
+  const metaDescription = document.querySelector('meta[name="description"]');
+  if (metaDescription) metaDescription.setAttribute("content", translate("metaDescription"));
+
+  for (const element of document.querySelectorAll("[data-i18n]")) {
+    element.textContent = translate(element.dataset.i18n);
+  }
+  for (const element of document.querySelectorAll("[data-i18n-placeholder]")) {
+    element.setAttribute("placeholder", translate(element.dataset.i18nPlaceholder));
+  }
+  for (const element of document.querySelectorAll("[data-i18n-aria-label]")) {
+    element.setAttribute("aria-label", translate(element.dataset.i18nAriaLabel));
+  }
+
+  elements.startTitle.textContent = translate("talkTo", { name: aiName() });
+  const status = elements.screens.call.dataset.status;
+  elements.connectionLabel.textContent = translate(status === "offline" ? "connectionLost" : "connected");
+}
+
 function aiName() {
   return state.settings.aiName || DEFAULT_SETTINGS.aiName;
 }
 
 function openingLine() {
   return state.settings.displayName
-    ? `Hey ${state.settings.displayName} — what’s on your mind?`
-    : "Hey — what’s on your mind?";
+    ? translate("openingNamed", { name: state.settings.displayName })
+    : translate("opening");
 }
 
 function setScreen(name) {
@@ -159,17 +370,21 @@ function setScreen(name) {
 
 function setStatus(status, announcement) {
   elements.screens.call.dataset.status = status;
-  elements.connectionLabel.textContent = status === "offline" ? "Connection lost" : "Connected";
+  elements.connectionLabel.textContent = translate(status === "offline" ? "connectionLost" : "connected");
   if (announcement) elements.srStatus.textContent = announcement;
 }
 
 function applySettings() {
+  state.locale = resolveLocale(state.settings.language);
   if (state.settings.theme === "auto") {
     document.documentElement.removeAttribute("data-theme");
   } else {
     document.documentElement.dataset.theme = state.settings.theme;
   }
+  applyTranslations();
   for (const label of elements.aiNameLabels) label.textContent = aiName();
+  elements.startTitle.textContent = translate("talkTo", { name: aiName() });
+  renderAccount();
 }
 
 function fillSettingsForm() {
@@ -177,6 +392,7 @@ function fillSettingsForm() {
   elements.displayNameInput.value = state.formDraft.displayName;
   elements.aiNameInput.value = state.formDraft.aiName;
   elements.memoryInput.value = state.formDraft.memory;
+  elements.languageSelect.value = state.formDraft.language;
   elements.themeSelect.value = state.formDraft.theme;
   applyChoiceState(elements.toneControl, "tone", state.formDraft.tone);
   applyChoiceState(elements.lengthControl, "length", state.formDraft.replyLength);
@@ -197,14 +413,25 @@ function selectChoice(event, key) {
   applyChoiceState(event.currentTarget, key, value);
 }
 
+function showDialog(dialog) {
+  if (dialog.open) return;
+  dialog.showModal();
+  dialog.focus({ preventScroll: true });
+  window.requestAnimationFrame(() => dialog.focus({ preventScroll: true }));
+}
+
+function openAccount() {
+  renderAccount();
+  showDialog(elements.accountDialog);
+}
+
 function openSettings() {
   fillSettingsForm();
-  renderAccount();
-  if (!elements.settingsDialog.open) {
-    elements.settingsDialog.showModal();
-    elements.settingsDialog.focus({ preventScroll: true });
-    window.requestAnimationFrame(() => elements.settingsDialog.focus({ preventScroll: true }));
-  }
+  showDialog(elements.settingsDialog);
+}
+
+function closeAccount() {
+  if (elements.accountDialog.open) elements.accountDialog.close();
 }
 
 function closeSettings() {
@@ -218,6 +445,7 @@ async function saveSettings(event) {
     displayName: elements.displayNameInput.value,
     aiName: elements.aiNameInput.value,
     memory: elements.memoryInput.value,
+    language: elements.languageSelect.value,
     theme: elements.themeSelect.value
   });
   state.settings = next;
@@ -226,9 +454,9 @@ async function saveSettings(event) {
 
   if (state.authUser && state.supabase) {
     const saved = await saveCloudProfile();
-    showToast(saved ? "Settings synced" : "Saved on this device; cloud sync failed");
+    showToast(translate(saved ? "synced" : "cloudFailed"));
   } else {
-    showToast("Settings saved on this device");
+    showToast(translate("localSaved"));
   }
   closeSettings();
 }
@@ -245,13 +473,13 @@ async function initAuth(showProblem = false) {
     if (!response.ok || !auth?.ready || !auth.url || !auth.publishableKey) {
       state.authConfigured = false;
       const missing = Array.isArray(auth?.missing) ? auth.missing.join(" and ") : "Supabase configuration";
-      state.authProblem = `Missing Cloudflare runtime variable: ${missing}`;
-      if (showProblem) showToast(state.authProblem);
+      state.authProblem = { key: "authMissing", variables: { names: missing } };
+      if (showProblem) showToast(translate(state.authProblem.key, state.authProblem.variables));
       return false;
     }
 
     state.authConfigured = true;
-    state.authProblem = "";
+    state.authProblem = null;
     state.supabase = createClient(auth.url, auth.publishableKey, {
       auth: {
         flowType: "pkce",
@@ -273,9 +501,9 @@ async function initAuth(showProblem = false) {
   } catch (error) {
     state.authConfigured = false;
     state.authProblem = error instanceof Error
-      ? `Google sign-in setup error: ${error.message}`
-      : "Google sign-in setup could not be loaded";
-    if (showProblem) showToast(state.authProblem);
+      ? { key: "authSetupError", variables: { message: error.message } }
+      : { key: "authLoadError", variables: {} };
+    if (showProblem) showToast(translate(state.authProblem.key, state.authProblem.variables));
     state.supabase = null;
     return false;
   } finally {
@@ -312,18 +540,22 @@ function renderAccount() {
     const metadataName = state.authUser.user_metadata?.full_name || state.authUser.user_metadata?.name;
     const label = state.settings.displayName || metadataName || state.authUser.email || "Account";
     elements.accountButton.textContent = String(label).split(/\s+/)[0].slice(0, 14);
-    elements.accountName.textContent = String(metadataName || state.authUser.email || "Google account");
-    elements.accountStatus.textContent = "Personalization sync is on";
+    elements.accountTitle.textContent = translate("accountPanelTitle");
+    elements.accountName.textContent = String(metadataName || state.authUser.email || translate("googleAccount"));
+    elements.accountStatus.textContent = translate("syncOn");
     elements.googleSignIn.classList.add("is-hidden");
     elements.signOut.classList.remove("is-hidden");
     return;
   }
 
-  elements.accountButton.textContent = "Sign in";
-  elements.accountName.textContent = "Guest";
+  elements.accountButton.textContent = translate("accountTitle");
+  elements.accountTitle.textContent = translate("accountTitle");
+  elements.accountName.textContent = translate("guest");
   elements.accountStatus.textContent = state.authConfigured
-    ? "Settings stay on this device"
-    : state.authProblem || "Checking Google sign-in…";
+    ? translate("deviceOnly")
+    : state.authProblem
+      ? translate(state.authProblem.key, state.authProblem.variables)
+      : translate("checkingSignIn");
   elements.googleSignIn.classList.remove("is-hidden");
   elements.signOut.classList.add("is-hidden");
 }
@@ -351,19 +583,29 @@ async function signOut() {
   state.authUser = null;
   state.loadedProfileFor = "";
   renderAccount();
-  showToast("Signed out");
+  showToast(translate("signedOut"));
 }
 
 async function loadCloudProfile() {
   if (!state.supabase || !state.authUser) return;
-  const { data, error } = await state.supabase
+  let { data, error } = await state.supabase
     .from("profiles")
-    .select("display_name,ai_name,tone,reply_length,memory,theme")
+    .select("display_name,ai_name,tone,reply_length,memory,theme,language")
     .eq("id", state.authUser.id)
     .maybeSingle();
 
+  if (error && /language/i.test(error.message || "")) {
+    const fallback = await state.supabase
+      .from("profiles")
+      .select("display_name,ai_name,tone,reply_length,memory,theme")
+      .eq("id", state.authUser.id)
+      .maybeSingle();
+    data = fallback.data;
+    error = fallback.error;
+  }
+
   if (error) {
-    elements.accountStatus.textContent = "Signed in; run supabase/schema.sql to sync";
+    elements.accountStatus.textContent = translate("signedInNeedsSchema");
     return;
   }
 
@@ -374,7 +616,8 @@ async function loadCloudProfile() {
       tone: data.tone,
       replyLength: data.reply_length,
       memory: data.memory,
-      theme: data.theme
+      theme: data.theme,
+      language: data.language ?? state.settings.language
     });
     storeSettings();
     applySettings();
@@ -402,6 +645,7 @@ async function saveCloudProfile() {
     reply_length: state.settings.replyLength,
     memory: state.settings.memory,
     theme: state.settings.theme,
+    language: state.settings.language,
     updated_at: new Date().toISOString()
   }, { onConflict: "id" });
   return !error;
@@ -437,7 +681,7 @@ function startCall() {
   updateTimer();
   clearInterval(state.timerInterval);
   state.timerInterval = window.setInterval(updateTimer, 1000);
-  setStatus("ready", "Call connected");
+  setStatus("ready", translate("callConnected"));
   setScreen("call");
   elements.messageInput.focus({ preventScroll: true });
   void verifyApiConnection();
@@ -449,13 +693,13 @@ async function verifyApiConnection() {
     const response = await fetch("/api/health", { cache: "no-store" });
     const health = await response.json();
     if (!response.ok || !health.ready) {
-      elements.aiCopy.textContent = "The API key is not connected to this Worker yet.";
-      setStatus("offline", "API key not connected");
-      showToast("Add OPENAI_API_KEY under this Worker's runtime secrets, then redeploy.");
+      elements.aiCopy.textContent = translate("apiMissing");
+      setStatus("offline", translate("apiMissing"));
+      showToast(translate("apiMissingToast"));
     }
   } catch {
-    elements.aiCopy.textContent = "I could not reach the Worker API.";
-    setStatus("offline", "Worker API unavailable");
+    elements.aiCopy.textContent = translate("workerUnavailable");
+    setStatus("offline", translate("workerUnavailable"));
   }
 }
 
@@ -548,7 +792,7 @@ async function sendDraft() {
   state.activeRequest = requestState;
   elements.aiCopy.textContent = "";
   elements.aiCopy.classList.add("is-streaming");
-  setStatus("thinking", `${aiName()} is thinking`);
+  setStatus("thinking", translate("thinking", { name: aiName() }));
 
   try {
     const response = await fetch("/api/respond", {
@@ -580,7 +824,7 @@ async function sendDraft() {
         requestState.text += nextText;
         elements.aiCopy.textContent = requestState.text;
         elements.aiCopy.scrollTop = elements.aiCopy.scrollHeight;
-        setStatus("replying", `${aiName()} is replying`);
+        setStatus("replying", translate("replying", { name: aiName() }));
       }
 
       if (done) {
@@ -604,9 +848,9 @@ async function sendDraft() {
       return;
     }
     settleResponse(requestState, true);
-    elements.aiCopy.textContent = "I lost the connection. Keep typing to try again.";
-    setStatus("offline", "Connection lost");
-    showToast(error instanceof Error ? error.message : "The connection failed.");
+    elements.aiCopy.textContent = translate("replyConnectionLost");
+    setStatus("offline", translate("connectionLost"));
+    showToast(error instanceof Error ? error.message : translate("replyConnectionLost"));
   }
 }
 
@@ -625,7 +869,7 @@ function settleResponse(requestState, interrupted) {
   }
   if (state.activeRequest === requestState) state.activeRequest = null;
   elements.aiCopy.classList.remove("is-streaming");
-  setStatus("ready", interrupted ? `${aiName()} stopped replying` : `${aiName()} finished replying`);
+  setStatus("ready", translate(interrupted ? "stopped" : "finished", { name: aiName() }));
 }
 
 function updateLiveUserSnapshot(content) {
@@ -667,7 +911,7 @@ async function safeErrorMessage(response) {
   } catch {
     // Fall through to the status-based message.
   }
-  return response.status === 429 ? "You are typing a little too fast. Try again in a moment." : "The response service is unavailable.";
+  return translate(response.status === 429 ? "typingFast" : "responseUnavailable");
 }
 
 function renderTranscript() {
@@ -677,7 +921,7 @@ function renderTranscript() {
     const name = document.createElement("strong");
     const copy = document.createElement("p");
     item.className = "transcript-item";
-    name.textContent = message.role === "assistant" ? aiName() : "You";
+    name.textContent = message.role === "assistant" ? aiName() : translate("you");
     copy.textContent = message.content;
     item.append(name, copy);
     elements.transcript.append(item);
@@ -685,12 +929,12 @@ function renderTranscript() {
 }
 
 async function copyTranscript() {
-  const text = state.messages.map((message) => `${message.role === "assistant" ? aiName() : "You"}: ${message.content}`).join("\n\n");
+  const text = state.messages.map((message) => `${message.role === "assistant" ? aiName() : translate("you")}: ${message.content}`).join("\n\n");
   try {
     await navigator.clipboard.writeText(text);
-    showToast("Transcript copied");
+    showToast(translate("transcriptCopied"));
   } catch {
-    showToast("Could not copy the transcript");
+    showToast(translate("transcriptCopyFailed"));
   }
 }
 
@@ -706,7 +950,8 @@ function updateViewportHeight() {
   document.documentElement.style.setProperty("--app-height", `${Math.round(height)}px`);
 }
 
-elements.accountButton.addEventListener("click", openSettings);
+elements.accountButton.addEventListener("click", openAccount);
+elements.closeAccount.addEventListener("click", closeAccount);
 elements.settingsButton.addEventListener("click", openSettings);
 elements.closeSettings.addEventListener("click", closeSettings);
 elements.settingsForm.addEventListener("submit", saveSettings);
@@ -727,8 +972,8 @@ window.visualViewport?.addEventListener("resize", updateViewportHeight);
 window.visualViewport?.addEventListener("scroll", updateViewportHeight);
 window.addEventListener("resize", updateViewportHeight);
 window.addEventListener("pagehide", () => abortActiveResponse(false));
-window.addEventListener("online", () => state.screen === "call" && setStatus("ready", "Connection restored"));
-window.addEventListener("offline", () => state.screen === "call" && setStatus("offline", "Connection lost"));
+window.addEventListener("online", () => state.screen === "call" && setStatus("ready", translate("connectionRestored")));
+window.addEventListener("offline", () => state.screen === "call" && setStatus("offline", translate("connectionLost")));
 
 applySettings();
 updateViewportHeight();
