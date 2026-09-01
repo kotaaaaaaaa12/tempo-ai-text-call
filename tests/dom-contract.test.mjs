@@ -31,10 +31,10 @@ test("the application shell uses organized versioned asset paths", async () => {
     readFile(new URL("../public/index.html", import.meta.url), "utf8"),
     readFile(new URL("../public/sw.js", import.meta.url), "utf8")
   ]);
-  assert.match(html, /\/assets\/css\/app\.css\?v=12/);
-  assert.match(html, /\/assets\/js\/app\.js\?v=12/);
+  assert.match(html, /\/assets\/css\/app\.css\?v=13/);
+  assert.match(html, /\/assets\/js\/app\.js\?v=13/);
   assert.match(html, /\/assets\/icons\/favicon\.svg/);
-  assert.match(worker, /tempo-shell-v12/);
+  assert.match(worker, /tempo-shell-v13/);
   assert.doesNotMatch(worker, /"\/sse\.js"/);
 });
 
@@ -110,12 +110,14 @@ test("settings tabs fit without horizontal scrolling and only the panel scrolls"
   assert.match(css, /\.settings-form\s*\{[^}]*overflow:\s*hidden/s);
 });
 
-test("Japanese interface copy uses polite phrasing", async () => {
+test("Japanese interface copy is friendly in conversation and clear for actions", async () => {
   const app = await readFile(new URL("../src/client/app.js", import.meta.url), "utf8");
-  assert.match(app, /talkTo: "\{name\}と話しましょう。"/);
+  assert.match(app, /talkTo: "\{name\}と話そう。"/);
+  assert.match(app, /startTyping: "ここに入力…"/);
+  assert.match(app, /openingNamed: "\{name\}さん、こんにちは。今日は何を話そうか？"/);
   assert.match(app, /chooseAction: "選択肢を押すか、そのまま入力してください。"/);
   assert.match(app, /historySignIn: "履歴を利用するにはログインしてください。"/);
-  assert.doesNotMatch(app, /入力してね|実行してね|ログインしてね|削除する？/);
+  assert.doesNotMatch(app, /話しましょう|入力してみましょう|何を話しますか/);
 });
 
 test("account and settings open the unified settings hub with three language choices", async () => {
