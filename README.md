@@ -1,4 +1,4 @@
-# tempo
+# tempoo
 
 `tempo` is a mobile-first AI text-call web app. The user types without a send button, the current turn is submitted after a short pause, and the AI reply appears incrementally through the OpenAI Responses API.
 
