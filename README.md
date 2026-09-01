@@ -40,7 +40,8 @@ Keep `public/assets/js/app.js` committed for direct Worker deploys, but edit `sr
 - Signed-in settings synchronized between devices
 - Explicit memory approval: suggested details are remembered only after the user taps the action
 - Optional signed-in conversation history, disabled by default
-- History resume/delete, personalization reset, and permanent account deletion
+- History resume/delete, personalization reset, and modal-confirmed permanent account deletion
+- Safari-friendly modal focus that opens on a non-interactive heading instead of a close button
 - Installable PWA shell with offline launch and an in-app update action
 - Row Level Security so each account can access only its own profile and conversations
 

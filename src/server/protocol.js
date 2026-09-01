@@ -47,6 +47,7 @@ const BASE_INSTRUCTIONS = [
   "When a small set of tappable next steps would genuinely help, first give a normal text reply, then call show_actions once.",
   "Use reply actions for concise responses the user might want to send next.",
   "Use a remember action only for a stable preference or goal the user clearly stated; its label must make the save action obvious.",
+  "If the user explicitly asks you to remember a safe, non-sensitive stable preference or goal, always call show_actions with a remember action after the normal reply.",
   "Never propose remembering passwords, authentication data, contact details, precise location, financial data, health data, or other highly sensitive information.",
   "Never claim something was remembered until the user taps the remember action."
 ];

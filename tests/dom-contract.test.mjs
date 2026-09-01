@@ -31,10 +31,10 @@ test("the application shell uses organized versioned asset paths", async () => {
     readFile(new URL("../public/index.html", import.meta.url), "utf8"),
     readFile(new URL("../public/sw.js", import.meta.url), "utf8")
   ]);
-  assert.match(html, /\/assets\/css\/app\.css\?v=9/);
-  assert.match(html, /\/assets\/js\/app\.js\?v=9/);
+  assert.match(html, /\/assets\/css\/app\.css\?v=10/);
+  assert.match(html, /\/assets\/js\/app\.js\?v=10/);
   assert.match(html, /\/assets\/icons\/favicon\.svg/);
-  assert.match(worker, /tempo-shell-v9/);
+  assert.match(worker, /tempo-shell-v10/);
   assert.doesNotMatch(worker, /"\/sse\.js"/);
 });
 
@@ -50,20 +50,37 @@ test("new controls include central actions, modes, history, and PWA update UI", 
   assert.match(html, /id="save-history-input"/);
   assert.match(html, /id="history-dialog"/);
   assert.match(html, /id="delete-account"/);
+  assert.match(html, /id="delete-account-dialog"/);
   assert.match(serviceWorker, /pathname\.startsWith\("\/api\/"\)/);
   assert.match(serviceWorker, /SKIP_WAITING/);
 });
 
-test("Google sign-in remains actionable and the settings dialog can receive Safari focus", async () => {
+test("Google sign-in remains actionable and dialogs focus passive headings on Safari", async () => {
   const [html, app] = await Promise.all([
     readFile(new URL("../public/index.html", import.meta.url), "utf8"),
     readFile(new URL("../src/client/app.js", import.meta.url), "utf8")
   ]);
 
-  assert.match(html, /<dialog[^>]+id="settings-dialog"[^>]+tabindex="-1"/);
-  assert.match(html, /<dialog[^>]+id="account-dialog"[^>]+tabindex="-1"/);
+  for (const titleId of ["account-title", "settings-title", "history-title", "delete-account-title"]) {
+    assert.match(html, new RegExp(`id="${titleId}"[^>]+data-dialog-focus[^>]+tabindex="-1"`));
+  }
+  assert.doesNotMatch(html, /<dialog[^>]+tabindex=/);
+  assert.match(app, /dialog\.querySelector\("\[data-dialog-focus\]"\)/);
+  assert.doesNotMatch(app, /dialog\.focus\(/);
   assert.doesNotMatch(html, /id="google-sign-in"[^>]+disabled/);
   assert.doesNotMatch(app, /googleSignIn\.disabled\s*=/);
+});
+
+test("account deletion uses a confirmation dialog instead of a browser alert", async () => {
+  const [html, app] = await Promise.all([
+    readFile(new URL("../public/index.html", import.meta.url), "utf8"),
+    readFile(new URL("../src/client/app.js", import.meta.url), "utf8")
+  ]);
+
+  assert.match(html, /id="cancel-delete-account"/);
+  assert.match(html, /id="confirm-delete-account"/);
+  assert.match(app, /deleteAccount\.addEventListener\("click", openDeleteAccountConfirmation\)/);
+  assert.doesNotMatch(app, /deleteAccountConfirm/);
 });
 
 test("account and settings open separate dialogs with three language choices", async () => {

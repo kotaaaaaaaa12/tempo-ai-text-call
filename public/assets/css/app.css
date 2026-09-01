@@ -202,6 +202,7 @@ summary:focus-visible {
 
 .primary-button,
 .secondary-button,
+.danger-button,
 .google-button {
   display: flex;
   align-items: center;
@@ -217,9 +218,11 @@ summary:focus-visible {
 
 .primary-button { background: var(--ink); color: var(--surface); }
 .secondary-button { border: 1px solid var(--line); background: transparent; }
+.danger-button { background: var(--danger); color: #fff; }
 
 .primary-button:active,
 .secondary-button:active,
+.danger-button:active,
 .google-button:active,
 .hangup-button:active { transform: scale(0.98); }
 
@@ -476,7 +479,7 @@ button:disabled { cursor: default; opacity: 0.45; }
   box-shadow: 0 28px 90px rgba(0, 0, 0, 0.28);
 }
 
-.app-dialog:focus { outline: none; }
+[data-dialog-focus]:focus { outline: none; }
 
 .app-dialog::backdrop { background: rgba(0, 0, 0, 0.46); backdrop-filter: blur(3px); }
 
@@ -492,6 +495,17 @@ button:disabled { cursor: default; opacity: 0.45; }
 .dialog-header { display: flex; align-items: flex-start; justify-content: space-between; }
 .dialog-header .eyebrow { margin-bottom: 4px; }
 .dialog-header h2 { margin: 0; font-size: 28px; letter-spacing: -0.05em; }
+
+.confirm-dialog { max-width: 390px; }
+.confirm-form { gap: 18px; }
+.confirm-header { display: grid; gap: 5px; }
+.confirm-header .eyebrow,
+.confirm-header h2,
+.confirm-copy { margin: 0; }
+.confirm-header h2 { font-size: 28px; letter-spacing: -0.05em; }
+.confirm-copy { color: var(--muted); font-size: 12px; line-height: 1.55; }
+.confirm-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.confirm-actions button { min-height: 50px; }
 
 .account-dialog { max-width: 420px; }
 .account-form { gap: 18px; }

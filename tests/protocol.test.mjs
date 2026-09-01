@@ -61,6 +61,7 @@ test("builds a non-stored streaming request", () => {
   assert.equal(request.tool_choice, "auto");
   assert.equal(request.parallel_tool_calls, false);
   assert.deepEqual(request.reasoning, { effort: "none" });
+  assert.match(request.instructions, /explicitly asks you to remember.*always call show_actions/i);
 });
 
 test("clips personalization fields and rejects unknown choices", () => {

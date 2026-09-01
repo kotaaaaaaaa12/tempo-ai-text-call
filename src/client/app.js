@@ -157,7 +157,10 @@ const TRANSLATIONS = {
     resetConfirm: "Reset AI name, tone, mode, and remembered details?",
     personalizationReset: "Personalization reset",
     deleteAccount: "Delete account",
-    deleteAccountConfirm: "Permanently delete your tempo account, settings, and saved calls? This cannot be undone.",
+    dangerZone: "Danger zone",
+    deleteAccountTitle: "Delete account?",
+    deleteAccountDescription: "Your settings and saved calls will be permanently deleted. This cannot be undone.",
+    cancel: "Cancel",
     accountDeleted: "Account deleted",
     accountDeleteFailed: "Could not delete the account. Run the latest supabase/schema.sql.",
     remembered: "Added to things to remember",
@@ -293,7 +296,10 @@ const TRANSLATIONS = {
     resetConfirm: "AIの名前・話し方・モード・覚えた内容をリセットする？",
     personalizationReset: "パーソナライズをリセットしました",
     deleteAccount: "アカウントを削除",
-    deleteAccountConfirm: "tempoのアカウント・設定・保存した会話を完全に削除する？ 元には戻せません。",
+    dangerZone: "注意",
+    deleteAccountTitle: "アカウントを削除する？",
+    deleteAccountDescription: "設定と保存した会話を完全に削除します。この操作は元に戻せません。",
+    cancel: "キャンセル",
     accountDeleted: "アカウントを削除しました",
     accountDeleteFailed: "アカウントを削除できませんでした。最新のsupabase/schema.sqlを実行してね。",
     remembered: "覚えてほしいことに追加しました",
@@ -329,6 +335,9 @@ const elements = {
   openHistory: document.querySelector("#open-history"),
   resetPersonalization: document.querySelector("#reset-personalization"),
   deleteAccount: document.querySelector("#delete-account"),
+  deleteAccountDialog: document.querySelector("#delete-account-dialog"),
+  cancelDeleteAccount: document.querySelector("#cancel-delete-account"),
+  confirmDeleteAccount: document.querySelector("#confirm-delete-account"),
   accountName: document.querySelector("#account-name"),
   accountStatus: document.querySelector("#account-status"),
   displayNameInput: document.querySelector("#display-name-input"),
@@ -590,8 +599,9 @@ function selectChoice(event, key) {
 function showDialog(dialog) {
   if (dialog.open) return;
   dialog.showModal();
-  dialog.focus({ preventScroll: true });
-  window.requestAnimationFrame(() => dialog.focus({ preventScroll: true }));
+  const focusHeading = () => dialog.querySelector("[data-dialog-focus]")?.focus({ preventScroll: true });
+  focusHeading();
+  window.requestAnimationFrame(focusHeading);
 }
 
 function openAccount() {
@@ -781,20 +791,41 @@ async function resetPersonalization() {
 }
 
 async function deleteAccount() {
-  if (!state.supabase || !state.authUser || !window.confirm(translate("deleteAccountConfirm"))) return;
-  const { error } = await state.supabase.rpc("delete_current_user");
+  if (!state.supabase || !state.authUser) return;
+  elements.confirmDeleteAccount.disabled = true;
+  elements.confirmDeleteAccount.setAttribute("aria-busy", "true");
+  let error = null;
+  try {
+    ({ error } = await state.supabase.rpc("delete_current_user"));
+  } catch {
+    error = new Error("Account deletion request failed");
+  } finally {
+    elements.confirmDeleteAccount.disabled = false;
+    elements.confirmDeleteAccount.removeAttribute("aria-busy");
+  }
   if (error) {
     showToast(translate("accountDeleteFailed"));
     return;
   }
+  closeDeleteAccountConfirmation(false);
   await state.supabase.auth.signOut({ scope: "local" });
   state.authUser = null;
   state.loadedProfileFor = "";
   state.settings = { ...DEFAULT_SETTINGS };
   storeSettings();
   applySettings();
-  closeAccount();
   showToast(translate("accountDeleted"));
+}
+
+function openDeleteAccountConfirmation() {
+  if (!state.supabase || !state.authUser) return;
+  closeAccount();
+  showDialog(elements.deleteAccountDialog);
+}
+
+function closeDeleteAccountConfirmation(reopenAccount = true) {
+  if (elements.deleteAccountDialog.open) elements.deleteAccountDialog.close();
+  if (reopenAccount && state.authUser) openAccount();
 }
 
 function closeHistory() {
@@ -1476,7 +1507,13 @@ elements.openHistory.addEventListener("click", openHistory);
 elements.closeHistory.addEventListener("click", closeHistory);
 elements.clearHistory.addEventListener("click", clearHistory);
 elements.resetPersonalization.addEventListener("click", resetPersonalization);
-elements.deleteAccount.addEventListener("click", deleteAccount);
+elements.deleteAccount.addEventListener("click", openDeleteAccountConfirmation);
+elements.cancelDeleteAccount.addEventListener("click", () => closeDeleteAccountConfirmation());
+elements.confirmDeleteAccount.addEventListener("click", deleteAccount);
+elements.deleteAccountDialog.addEventListener("cancel", (event) => {
+  event.preventDefault();
+  closeDeleteAccountConfirmation();
+});
 elements.toneControl.addEventListener("click", (event) => selectChoice(event, "tone"));
 elements.lengthControl.addEventListener("click", (event) => selectChoice(event, "length"));
 elements.modeSelect.addEventListener("change", updateCustomModeField);
