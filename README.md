@@ -4,20 +4,45 @@
 
 The frontend and API run from one Cloudflare Worker. Google sign-in and synchronized personalization use Supabase Auth and Postgres Row Level Security.
 
+## Project structure
+
+```text
+src/
+  client/              Browser application source
+  server/              Cloudflare Worker and API protocol
+  shared/              Browser-safe shared stream utilities
+public/
+  assets/css/          Styles
+  assets/icons/        PWA and browser icons
+  assets/js/           Generated browser bundle
+  index.html            Application shell
+  manifest.webmanifest PWA manifest
+  sw.js                 Service worker
+supabase/
+  schema.sql            Idempotent database schema and policies
+tests/                  Protocol, DOM, schema, and stream tests
+```
+
+Keep `public/assets/js/app.js` committed for direct Worker deploys, but edit `src/client/app.js` instead and regenerate the bundle with `npm run build`.
+
 ## Features
 
 - Minimal mobile interface with light and dark themes
 - English and Japanese UI with Auto, English, and Japanese language settings
-- Send-button-free text calls with a 900 ms pause detector
-- Japanese IME handling with a 1,100 ms fallback for iOS Safari
+- Adjustable send timing: 0.9 seconds, 1.5 seconds, 2.5 seconds, or Enter only
+- Japanese IME handling with an extra composition delay for iOS Safari
 - A persistent live draft that stays editable until the user clears it
 - OpenAI Responses API streaming over server-sent events
+- Optional AI-generated reply and memory action chips between the two speaker panels
+- General, Study, English practice, Brainstorm, Advice, and Custom conversation modes
 - Optional Google sign-in with PKCE
 - Guest settings stored only on the device
 - Signed-in settings synchronized between devices
-- Personalized user name, AI name, tone, reply length, remembered context, and language
-- Conversation transcripts kept only in memory and never uploaded to Supabase
-- Row Level Security so each account can access only its own profile
+- Explicit memory approval: suggested details are remembered only after the user taps the action
+- Optional signed-in conversation history, disabled by default
+- History resume/delete, personalization reset, and permanent account deletion
+- Installable PWA shell with offline launch and an in-app update action
+- Row Level Security so each account can access only its own profile and conversations
 
 ## Local setup
 
@@ -40,9 +65,9 @@ Google login is optional. The app continues to work in guest mode until Supabase
 
 ### 1. Create the profile table
 
-Create a Supabase project. Open its SQL Editor, paste the entire contents of `supabase/schema.sql`, and run it. The included policies allow signed-in users to access only their own profile row.
+Create a Supabase project. Open its SQL Editor, paste the entire contents of `supabase/schema.sql`, and run it. The included policies allow signed-in users to access only their own profile and conversation rows.
 
-Run the same file again after updating an existing deployment. It safely adds the synchronized language column when the profile table already exists.
+Run the same file again after updating an existing deployment. It safely adds the new settings columns, private conversation history, and the authenticated account-deletion function without replacing existing rows.
 
 ### 2. Configure Google
 
@@ -102,9 +127,15 @@ The committed browser bundle allows the previous `npx wrangler deploy` command t
 - Guests keep settings in browser storage.
 - Google users synchronize settings through the `profiles` table.
 - Auto language uses Japanese only when the browser's primary language is Japanese. Every other browser language uses English.
-- The current settings are sent with each OpenAI request so the server can set the AI name, tone, reply length, and relevant user context.
+- The current settings are sent with each OpenAI request so the server can set the AI name, tone, reply length, conversation mode, and relevant user context.
 - Remembered text is treated as untrusted user background, not as system instructions.
-- Calls and transcripts are not stored in Supabase or OpenAI by this project. OpenAI requests use `store: false`.
+- Suggested memories are never saved automatically; the user must tap the clearly labeled memory action.
+- Conversation history is off by default and requires Google sign-in. When enabled, the app saves only to the signed-in user's RLS-protected rows in Supabase.
+- OpenAI requests use `store: false` regardless of the history setting.
+
+## PWA updates
+
+The app registers `public/sw.js`. API requests are never cached. The static app shell uses network-first loading and falls back to the cached shell when offline. When a new worker is waiting, Settings shows **Update app**. On iPhone, use Safari's Share menu and **Add to Home Screen**.
 
 ## Production notes
 

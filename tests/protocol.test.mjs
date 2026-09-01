@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { buildOpenAIRequest, validateChatBody } from "../src/protocol.js";
+import { buildOpenAIRequest, validateChatBody } from "../src/server/protocol.js";
 
 test("validates and normalizes a chat body", () => {
   const result = validateChatBody({
@@ -8,7 +8,9 @@ test("validates and normalizes a chat body", () => {
       aiName: "Pico",
       tone: "thoughtful",
       replyLength: "balanced",
-      displayName: "Kai"
+      displayName: "Kai",
+      conversationMode: "study",
+      customModePrompt: "Quiz me"
     },
     messages: [
       { role: "assistant", content: "Hello" },
@@ -21,6 +23,7 @@ test("validates and normalizes a chat body", () => {
     assert.equal(result.value.profile.tone, "thoughtful");
     assert.equal(result.value.profile.aiName, "Pico");
     assert.equal(result.value.profile.replyLength, "balanced");
+    assert.equal(result.value.profile.conversationMode, "study");
     assert.equal(result.value.messages[1].content, "How are you?");
   }
 });
@@ -51,8 +54,12 @@ test("builds a non-stored streaming request", () => {
   assert.equal(request.model, "gpt-5.6-luna");
   assert.equal(request.stream, true);
   assert.equal(request.store, false);
-  assert.equal(request.max_output_tokens, 120);
+  assert.equal(request.max_output_tokens, 220);
   assert.match(request.instructions, /Likes astronomy/);
+  assert.equal(request.tools[0].name, "show_actions");
+  assert.equal(request.tools[0].strict, true);
+  assert.equal(request.tool_choice, "auto");
+  assert.equal(request.parallel_tool_calls, false);
   assert.deepEqual(request.reasoning, { effort: "none" });
 });
 
@@ -62,6 +69,8 @@ test("clips personalization fields and rejects unknown choices", () => {
       aiName: "",
       tone: "hostile",
       replyLength: "essay",
+      conversationMode: "unsafe-override",
+      customModePrompt: "x".repeat(700),
       memory: "x".repeat(700)
     },
     messages: [{ role: "user", content: "Test" }]
@@ -71,5 +80,7 @@ test("clips personalization fields and rejects unknown choices", () => {
   assert.equal(validation.value.profile.aiName, "Nova");
   assert.equal(validation.value.profile.tone, "casual");
   assert.equal(validation.value.profile.replyLength, "short");
+  assert.equal(validation.value.profile.conversationMode, "general");
+  assert.equal(validation.value.profile.customModePrompt.length, 500);
   assert.equal(validation.value.profile.memory.length, 500);
 });

@@ -22,6 +22,36 @@ test("the web app manifest is valid JSON", async () => {
   const manifest = JSON.parse(source);
   assert.equal(manifest.display, "standalone");
   assert.equal(manifest.start_url, "/");
+  assert.ok(manifest.icons.some((icon) => icon.sizes === "192x192"));
+  assert.ok(manifest.icons.some((icon) => icon.sizes === "512x512"));
+});
+
+test("the application shell uses organized versioned asset paths", async () => {
+  const [html, worker] = await Promise.all([
+    readFile(new URL("../public/index.html", import.meta.url), "utf8"),
+    readFile(new URL("../public/sw.js", import.meta.url), "utf8")
+  ]);
+  assert.match(html, /\/assets\/css\/app\.css\?v=9/);
+  assert.match(html, /\/assets\/js\/app\.js\?v=9/);
+  assert.match(html, /\/assets\/icons\/favicon\.svg/);
+  assert.match(worker, /tempo-shell-v9/);
+  assert.doesNotMatch(worker, /"\/sse\.js"/);
+});
+
+test("new controls include central actions, modes, history, and PWA update UI", async () => {
+  const [html, serviceWorker] = await Promise.all([
+    readFile(new URL("../public/index.html", import.meta.url), "utf8"),
+    readFile(new URL("../public/sw.js", import.meta.url), "utf8")
+  ]);
+  assert.match(html, /class="assistant-actions is-hidden" id="assistant-actions"/);
+  assert.ok(html.indexOf('id="assistant-actions"') < html.indexOf('id="user-panel"'));
+  assert.match(html, /id="send-delay-select"/);
+  assert.match(html, /id="mode-select"/);
+  assert.match(html, /id="save-history-input"/);
+  assert.match(html, /id="history-dialog"/);
+  assert.match(html, /id="delete-account"/);
+  assert.match(serviceWorker, /pathname\.startsWith\("\/api\/"\)/);
+  assert.match(serviceWorker, /SKIP_WAITING/);
 });
 
 test("Google sign-in remains actionable and the settings dialog can receive Safari focus", async () => {

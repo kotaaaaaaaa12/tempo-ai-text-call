@@ -1,8 +1,14 @@
 import { createClient } from "@supabase/supabase-js";
-import { completedText, eventError, parseSseBuffer, textDelta } from "../../public/sse.js";
+import {
+  completedFunctionArguments,
+  completedText,
+  eventError,
+  functionArgumentsDelta,
+  parseSseBuffer,
+  responseFunctionArguments,
+  textDelta
+} from "../shared/sse.js";
 
-const SEND_DELAY_MS = 900;
-const COMPOSITION_SEND_DELAY_MS = 1100;
 const MAX_INPUT_CHARS = 280;
 const HISTORY_LIMIT = 12;
 const SETTINGS_KEY = "tempo-settings-v2";
@@ -10,6 +16,9 @@ const VALID_TONES = new Set(["casual", "thoughtful", "direct"]);
 const VALID_LENGTHS = new Set(["short", "balanced", "detailed"]);
 const VALID_THEMES = new Set(["auto", "light", "dark"]);
 const VALID_LANGUAGES = new Set(["auto", "en", "ja"]);
+const VALID_SEND_DELAYS = new Set(["fast", "normal", "slow", "manual"]);
+const VALID_MODES = new Set(["general", "study", "english", "brainstorm", "advice", "custom"]);
+const SEND_DELAYS_MS = Object.freeze({ fast: 900, normal: 1500, slow: 2500 });
 
 const DEFAULT_SETTINGS = Object.freeze({
   displayName: "",
@@ -18,7 +27,11 @@ const DEFAULT_SETTINGS = Object.freeze({
   replyLength: "short",
   memory: "",
   theme: "auto",
-  language: "auto"
+  language: "auto",
+  sendDelay: "normal",
+  conversationMode: "general",
+  customModePrompt: "",
+  saveHistory: false
 });
 
 const TRANSLATIONS = {
@@ -30,6 +43,7 @@ const TRANSLATIONS = {
     homeLede: "Just type. Your AI replies when you pause.",
     startCall: "Start call",
     notSaved: "Conversations are not saved.",
+    savedWhenSignedIn: "History saves only while you are signed in.",
     openSettings: "Open settings",
     endCall: "End call",
     you: "You",
@@ -103,7 +117,59 @@ const TRANSLATIONS = {
     finished: "{name} finished replying",
     authMissing: "Missing Cloudflare runtime variable: {names}",
     authSetupError: "Google sign-in setup error: {message}",
-    authLoadError: "Google sign-in setup could not be loaded"
+    authLoadError: "Google sign-in setup could not be loaded",
+    suggestedActions: "Suggested actions",
+    chooseAction: "Choose an option, or keep typing.",
+    conversationMode: "Conversation mode",
+    modeGeneral: "General",
+    modeStudy: "Study",
+    modeEnglish: "English practice",
+    modeBrainstorm: "Brainstorm",
+    modeAdvice: "Advice",
+    modeCustom: "Custom",
+    customInstructions: "Custom mode instructions",
+    customInstructionsPlaceholder: "How should this mode work?",
+    sendTiming: "Send timing",
+    sendFast: "Fast · 0.9 sec",
+    sendNormal: "Normal · 1.5 sec",
+    sendSlow: "Slow · 2.5 sec",
+    sendManual: "Manual · Enter",
+    sendHintFast: "Updates after 0.9 seconds",
+    sendHintNormal: "Updates after 1.5 seconds",
+    sendHintSlow: "Updates after 2.5 seconds",
+    sendHintManual: "Press Enter to send",
+    saveHistory: "Save conversation history",
+    historyOffNote: "Off by default. Saved only to your signed-in account.",
+    history: "History",
+    yourCalls: "Your calls",
+    closeHistory: "Close history",
+    historyEmpty: "No saved calls yet.",
+    historyLoading: "Loading saved calls…",
+    historySignIn: "Sign in to use history.",
+    historySaved: "Call saved to history",
+    historySaveFailed: "Could not save this call. Run the latest supabase/schema.sql.",
+    clearHistory: "Clear all history",
+    clearHistoryConfirm: "Delete all saved calls? This cannot be undone.",
+    deleteCallConfirm: "Delete this saved call?",
+    resumeCall: "Resume call",
+    turnCount: "{count} turns",
+    resetPersonalization: "Reset personalization",
+    resetConfirm: "Reset AI name, tone, mode, and remembered details?",
+    personalizationReset: "Personalization reset",
+    deleteAccount: "Delete account",
+    deleteAccountConfirm: "Permanently delete your tempo account, settings, and saved calls? This cannot be undone.",
+    accountDeleted: "Account deleted",
+    accountDeleteFailed: "Could not delete the account. Run the latest supabase/schema.sql.",
+    remembered: "Added to things to remember",
+    memoryFull: "Things to remember is full",
+    appInstall: "App install",
+    appInstallNote: "Add tempo to your home screen and keep its app shell available offline.",
+    installApp: "Add to Home Screen",
+    updateApp: "Update app",
+    installIos: "In Safari, tap Share, then Add to Home Screen.",
+    installUnavailable: "Install is available from your browser menu.",
+    appInstalled: "tempo is installed",
+    historyNeedsLogin: "Sign in to save conversation history"
   },
   ja: {
     documentTitle: "tempo — AI文字通話",
@@ -113,6 +179,7 @@ const TRANSLATIONS = {
     homeLede: "文字を打つだけ。入力が止まるとAIが返事します。",
     startCall: "通話を始める",
     notSaved: "会話内容は保存されません。",
+    savedWhenSignedIn: "ログイン中だけ会話履歴を保存します。",
     openSettings: "設定を開く",
     endCall: "通話を終了",
     you: "あなた",
@@ -186,7 +253,59 @@ const TRANSLATIONS = {
     finished: "{name}が返答しました",
     authMissing: "Cloudflareのランタイム変数が見つかりません: {names}",
     authSetupError: "Googleログインの設定エラー: {message}",
-    authLoadError: "Googleログイン設定を読み込めませんでした"
+    authLoadError: "Googleログイン設定を読み込めませんでした",
+    suggestedActions: "提案されたアクション",
+    chooseAction: "選択肢を押すか、そのまま入力してね。",
+    conversationMode: "会話モード",
+    modeGeneral: "ふつう",
+    modeStudy: "勉強",
+    modeEnglish: "英会話",
+    modeBrainstorm: "アイデア出し",
+    modeAdvice: "相談",
+    modeCustom: "カスタム",
+    customInstructions: "カスタムモードの指示",
+    customInstructionsPlaceholder: "どんなモードにする？",
+    sendTiming: "送信タイミング",
+    sendFast: "速い · 0.9秒",
+    sendNormal: "ふつう · 1.5秒",
+    sendSlow: "ゆっくり · 2.5秒",
+    sendManual: "手動 · Enter",
+    sendHintFast: "0.9秒止まると更新します",
+    sendHintNormal: "1.5秒止まると更新します",
+    sendHintSlow: "2.5秒止まると更新します",
+    sendHintManual: "Enterで送信します",
+    saveHistory: "会話履歴を保存",
+    historyOffNote: "初期設定はOFF。ログイン中の自分のアカウントだけに保存します。",
+    history: "履歴",
+    yourCalls: "あなたの通話",
+    closeHistory: "履歴を閉じる",
+    historyEmpty: "保存した通話はまだありません。",
+    historyLoading: "保存した通話を読み込み中…",
+    historySignIn: "履歴を使うにはログインしてね。",
+    historySaved: "会話を履歴に保存しました",
+    historySaveFailed: "会話を保存できませんでした。最新のsupabase/schema.sqlを実行してね。",
+    clearHistory: "履歴をすべて削除",
+    clearHistoryConfirm: "保存した会話を全部削除する？ 元には戻せません。",
+    deleteCallConfirm: "この会話を削除する？",
+    resumeCall: "通話を再開",
+    turnCount: "{count}ターン",
+    resetPersonalization: "パーソナライズをリセット",
+    resetConfirm: "AIの名前・話し方・モード・覚えた内容をリセットする？",
+    personalizationReset: "パーソナライズをリセットしました",
+    deleteAccount: "アカウントを削除",
+    deleteAccountConfirm: "tempoのアカウント・設定・保存した会話を完全に削除する？ 元には戻せません。",
+    accountDeleted: "アカウントを削除しました",
+    accountDeleteFailed: "アカウントを削除できませんでした。最新のsupabase/schema.sqlを実行してね。",
+    remembered: "覚えてほしいことに追加しました",
+    memoryFull: "覚えてほしいことがいっぱいです",
+    appInstall: "アプリとして使う",
+    appInstallNote: "ホーム画面に追加して、アプリの画面をオフラインでも開けます。",
+    installApp: "ホーム画面に追加",
+    updateApp: "アプリを更新",
+    installIos: "Safariの共有ボタンから「ホーム画面に追加」を押してね。",
+    installUnavailable: "ブラウザのメニューからインストールできます。",
+    appInstalled: "tempoをインストールしました",
+    historyNeedsLogin: "会話履歴を保存するにはログインしてね"
   }
 };
 
@@ -206,32 +325,51 @@ const elements = {
   closeSettings: document.querySelector("#close-settings"),
   googleSignIn: document.querySelector("#google-sign-in"),
   signOut: document.querySelector("#sign-out"),
+  accountActions: document.querySelector("#account-actions"),
+  openHistory: document.querySelector("#open-history"),
+  resetPersonalization: document.querySelector("#reset-personalization"),
+  deleteAccount: document.querySelector("#delete-account"),
   accountName: document.querySelector("#account-name"),
   accountStatus: document.querySelector("#account-status"),
   displayNameInput: document.querySelector("#display-name-input"),
   aiNameInput: document.querySelector("#ai-name-input"),
   memoryInput: document.querySelector("#memory-input"),
+  modeSelect: document.querySelector("#mode-select"),
+  customModeField: document.querySelector("#custom-mode-field"),
+  customModeInput: document.querySelector("#custom-mode-input"),
+  sendDelaySelect: document.querySelector("#send-delay-select"),
+  saveHistoryInput: document.querySelector("#save-history-input"),
   languageSelect: document.querySelector("#language-select"),
   themeSelect: document.querySelector("#theme-select"),
   toneControl: document.querySelector("#tone-control"),
   lengthControl: document.querySelector("#length-control"),
   aiNameLabels: document.querySelectorAll("[data-ai-name]"),
   startTitle: document.querySelector("#start-title"),
+  privacyNote: document.querySelector("#privacy-note"),
   startCall: document.querySelector("#start-call"),
   endCall: document.querySelector("#end-call"),
   callAgain: document.querySelector("#call-again"),
   copyTranscript: document.querySelector("#copy-transcript"),
   userPanel: document.querySelector("#user-panel"),
+  assistantActions: document.querySelector("#assistant-actions"),
   messageInput: document.querySelector("#message-input"),
   aiCopy: document.querySelector("#ai-copy"),
   characterCount: document.querySelector("#character-count"),
   sendHint: document.querySelector("#send-hint"),
+  sendHintLabel: document.querySelector("#send-hint-label"),
   connectionLabel: document.querySelector("#connection-label"),
   srStatus: document.querySelector("#sr-status"),
   callTimer: document.querySelector("#call-timer"),
   finalDuration: document.querySelector("#final-duration"),
   finalTurns: document.querySelector("#final-turns"),
   transcript: document.querySelector("#transcript"),
+  historyDialog: document.querySelector("#history-dialog"),
+  closeHistory: document.querySelector("#close-history"),
+  historyNote: document.querySelector("#history-note"),
+  historyList: document.querySelector("#history-list"),
+  clearHistory: document.querySelector("#clear-history"),
+  installApp: document.querySelector("#install-app"),
+  updateApp: document.querySelector("#update-app"),
   toast: document.querySelector("#toast")
 };
 
@@ -258,7 +396,15 @@ const state = {
   authConfigured: false,
   authInitializing: false,
   authProblem: null,
-  locale: "en"
+  locale: "en",
+  currentConversationId: null,
+  callKey: "",
+  historySaveQueue: Promise.resolve(),
+  installPrompt: null,
+  waitingWorker: null,
+  reloadingForUpdate: false,
+  historyErrorShown: false,
+  profileSchemaReady: true
 };
 
 function readPreference(key, fallback) {
@@ -288,7 +434,11 @@ function normalizeSettings(value) {
     replyLength: VALID_LENGTHS.has(candidate.replyLength) ? candidate.replyLength : DEFAULT_SETTINGS.replyLength,
     memory: typeof candidate.memory === "string" ? candidate.memory.trim().slice(0, 500) : "",
     theme: VALID_THEMES.has(candidate.theme) ? candidate.theme : DEFAULT_SETTINGS.theme,
-    language: VALID_LANGUAGES.has(candidate.language) ? candidate.language : DEFAULT_SETTINGS.language
+    language: VALID_LANGUAGES.has(candidate.language) ? candidate.language : DEFAULT_SETTINGS.language,
+    sendDelay: VALID_SEND_DELAYS.has(candidate.sendDelay) ? candidate.sendDelay : DEFAULT_SETTINGS.sendDelay,
+    conversationMode: VALID_MODES.has(candidate.conversationMode) ? candidate.conversationMode : DEFAULT_SETTINGS.conversationMode,
+    customModePrompt: typeof candidate.customModePrompt === "string" ? candidate.customModePrompt.trim().slice(0, 500) : "",
+    saveHistory: candidate.saveHistory === true
   };
 }
 
@@ -346,6 +496,8 @@ function applyTranslations() {
   elements.startTitle.textContent = translate("talkTo", { name: aiName() });
   const status = elements.screens.call.dataset.status;
   elements.connectionLabel.textContent = translate(status === "offline" ? "connectionLost" : "connected");
+  updateSendHint();
+  elements.privacyNote.textContent = translate(state.settings.saveHistory ? "savedWhenSignedIn" : "notSaved");
 }
 
 function aiName() {
@@ -384,7 +536,18 @@ function applySettings() {
   applyTranslations();
   for (const label of elements.aiNameLabels) label.textContent = aiName();
   elements.startTitle.textContent = translate("talkTo", { name: aiName() });
+  elements.privacyNote.textContent = translate(state.settings.saveHistory ? "savedWhenSignedIn" : "notSaved");
   renderAccount();
+}
+
+function updateSendHint() {
+  const key = {
+    fast: "sendHintFast",
+    normal: "sendHintNormal",
+    slow: "sendHintSlow",
+    manual: "sendHintManual"
+  }[state.settings.sendDelay] || "sendHintNormal";
+  elements.sendHintLabel.textContent = translate(key);
 }
 
 function fillSettingsForm() {
@@ -392,10 +555,21 @@ function fillSettingsForm() {
   elements.displayNameInput.value = state.formDraft.displayName;
   elements.aiNameInput.value = state.formDraft.aiName;
   elements.memoryInput.value = state.formDraft.memory;
+  elements.modeSelect.value = state.formDraft.conversationMode;
+  elements.customModeInput.value = state.formDraft.customModePrompt;
+  elements.sendDelaySelect.value = state.formDraft.sendDelay;
+  elements.saveHistoryInput.checked = state.formDraft.saveHistory;
   elements.languageSelect.value = state.formDraft.language;
   elements.themeSelect.value = state.formDraft.theme;
+  updateCustomModeField();
   applyChoiceState(elements.toneControl, "tone", state.formDraft.tone);
   applyChoiceState(elements.lengthControl, "length", state.formDraft.replyLength);
+}
+
+function updateCustomModeField() {
+  const custom = elements.modeSelect.value === "custom";
+  elements.customModeField.classList.toggle("is-hidden", !custom);
+  elements.customModeInput.disabled = !custom;
 }
 
 function applyChoiceState(control, key, value) {
@@ -445,6 +619,10 @@ async function saveSettings(event) {
     displayName: elements.displayNameInput.value,
     aiName: elements.aiNameInput.value,
     memory: elements.memoryInput.value,
+    conversationMode: elements.modeSelect.value,
+    customModePrompt: elements.customModeInput.value,
+    sendDelay: elements.sendDelaySelect.value,
+    saveHistory: elements.saveHistoryInput.checked,
     language: elements.languageSelect.value,
     theme: elements.themeSelect.value
   });
@@ -542,9 +720,9 @@ function renderAccount() {
     elements.accountButton.textContent = String(label).split(/\s+/)[0].slice(0, 14);
     elements.accountTitle.textContent = translate("accountPanelTitle");
     elements.accountName.textContent = String(metadataName || state.authUser.email || translate("googleAccount"));
-    elements.accountStatus.textContent = translate("syncOn");
+    elements.accountStatus.textContent = translate(state.profileSchemaReady ? "syncOn" : "signedInNeedsSchema");
     elements.googleSignIn.classList.add("is-hidden");
-    elements.signOut.classList.remove("is-hidden");
+    elements.accountActions.classList.remove("is-hidden");
     return;
   }
 
@@ -557,7 +735,7 @@ function renderAccount() {
       ? translate(state.authProblem.key, state.authProblem.variables)
       : translate("checkingSignIn");
   elements.googleSignIn.classList.remove("is-hidden");
-  elements.signOut.classList.add("is-hidden");
+  elements.accountActions.classList.add("is-hidden");
 }
 
 async function signInWithGoogle() {
@@ -586,15 +764,151 @@ async function signOut() {
   showToast(translate("signedOut"));
 }
 
+async function resetPersonalization() {
+  if (!window.confirm(translate("resetConfirm"))) return;
+  state.settings = normalizeSettings({
+    ...DEFAULT_SETTINGS,
+    displayName: state.settings.displayName,
+    theme: state.settings.theme,
+    language: state.settings.language,
+    sendDelay: state.settings.sendDelay,
+    saveHistory: state.settings.saveHistory
+  });
+  storeSettings();
+  applySettings();
+  if (state.authUser && state.supabase) await saveCloudProfile();
+  showToast(translate("personalizationReset"));
+}
+
+async function deleteAccount() {
+  if (!state.supabase || !state.authUser || !window.confirm(translate("deleteAccountConfirm"))) return;
+  const { error } = await state.supabase.rpc("delete_current_user");
+  if (error) {
+    showToast(translate("accountDeleteFailed"));
+    return;
+  }
+  await state.supabase.auth.signOut({ scope: "local" });
+  state.authUser = null;
+  state.loadedProfileFor = "";
+  state.settings = { ...DEFAULT_SETTINGS };
+  storeSettings();
+  applySettings();
+  closeAccount();
+  showToast(translate("accountDeleted"));
+}
+
+function closeHistory() {
+  if (elements.historyDialog.open) elements.historyDialog.close();
+}
+
+async function openHistory() {
+  closeAccount();
+  elements.historyList.replaceChildren();
+  elements.clearHistory.classList.add("is-hidden");
+  elements.historyNote.classList.remove("is-hidden");
+  elements.historyNote.textContent = translate(state.authUser ? "historyLoading" : "historySignIn");
+  showDialog(elements.historyDialog);
+  if (!state.supabase || !state.authUser) return;
+
+  const { data, error } = await state.supabase
+    .from("conversations")
+    .select("id,title,messages,updated_at")
+    .order("updated_at", { ascending: false })
+    .limit(30);
+  if (error) {
+    elements.historyNote.textContent = translate("historySaveFailed");
+    return;
+  }
+  renderHistory(data || []);
+}
+
+function safeConversationMessages(value) {
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter((message) => message && (message.role === "user" || message.role === "assistant") && typeof message.content === "string")
+    .map((message) => ({ role: message.role, content: message.content.trim().slice(0, 600) }))
+    .filter((message) => message.content)
+    .slice(-HISTORY_LIMIT);
+}
+
+function renderHistory(records) {
+  elements.historyList.replaceChildren();
+  elements.historyNote.classList.toggle("is-hidden", records.length > 0);
+  elements.historyNote.textContent = translate("historyEmpty");
+  elements.clearHistory.classList.toggle("is-hidden", records.length === 0);
+
+  for (const record of records) {
+    const item = document.createElement("article");
+    const resume = document.createElement("button");
+    const title = document.createElement("strong");
+    const details = document.createElement("span");
+    const remove = document.createElement("button");
+    const messages = safeConversationMessages(record.messages);
+    const turns = messages.filter((message) => message.role === "user").length;
+    const date = new Intl.DateTimeFormat(state.locale === "ja" ? "ja-JP" : "en", {
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit"
+    }).format(new Date(record.updated_at));
+
+    item.className = "history-item";
+    resume.className = "history-main";
+    resume.type = "button";
+    resume.title = translate("resumeCall");
+    title.textContent = String(record.title || messages.find((message) => message.role === "user")?.content || aiName()).slice(0, 80);
+    details.textContent = `${date} · ${translate("turnCount", { count: turns })}`;
+    resume.append(title, details);
+    resume.addEventListener("click", () => resumeConversation(record.id, messages));
+
+    remove.className = "history-delete";
+    remove.type = "button";
+    remove.textContent = "×";
+    remove.setAttribute("aria-label", translate("deleteCallConfirm"));
+    remove.addEventListener("click", () => void deleteConversation(record.id, item));
+    item.append(resume, remove);
+    elements.historyList.append(item);
+  }
+}
+
+function resumeConversation(id, messages) {
+  if (!messages.length) return;
+  closeHistory();
+  beginCall(messages, id);
+}
+
+async function deleteConversation(id, item) {
+  if (!state.supabase || !state.authUser || !window.confirm(translate("deleteCallConfirm"))) return;
+  const { error } = await state.supabase.from("conversations").delete().eq("id", id);
+  if (error) {
+    showToast(error.message);
+    return;
+  }
+  item.remove();
+  if (!elements.historyList.children.length) renderHistory([]);
+}
+
+async function clearHistory() {
+  if (!state.supabase || !state.authUser || !window.confirm(translate("clearHistoryConfirm"))) return;
+  const { error } = await state.supabase.from("conversations").delete().eq("user_id", state.authUser.id);
+  if (error) {
+    showToast(error.message);
+    return;
+  }
+  renderHistory([]);
+}
+
 async function loadCloudProfile() {
   if (!state.supabase || !state.authUser) return;
+  state.profileSchemaReady = true;
   let { data, error } = await state.supabase
     .from("profiles")
-    .select("display_name,ai_name,tone,reply_length,memory,theme,language")
+    .select("display_name,ai_name,tone,reply_length,memory,theme,language,send_delay,conversation_mode,custom_mode_prompt,save_history")
     .eq("id", state.authUser.id)
     .maybeSingle();
 
-  if (error && /language/i.test(error.message || "")) {
+  if (error && /(language|send_delay|conversation_mode|custom_mode_prompt|save_history)/i.test(error.message || "")) {
+    state.profileSchemaReady = false;
     const fallback = await state.supabase
       .from("profiles")
       .select("display_name,ai_name,tone,reply_length,memory,theme")
@@ -605,6 +919,7 @@ async function loadCloudProfile() {
   }
 
   if (error) {
+    state.profileSchemaReady = false;
     elements.accountStatus.textContent = translate("signedInNeedsSchema");
     return;
   }
@@ -617,7 +932,11 @@ async function loadCloudProfile() {
       replyLength: data.reply_length,
       memory: data.memory,
       theme: data.theme,
-      language: data.language ?? state.settings.language
+      language: data.language ?? state.settings.language,
+      sendDelay: data.send_delay ?? state.settings.sendDelay,
+      conversationMode: data.conversation_mode ?? state.settings.conversationMode,
+      customModePrompt: data.custom_mode_prompt ?? state.settings.customModePrompt,
+      saveHistory: data.save_history ?? state.settings.saveHistory
     });
     storeSettings();
     applySettings();
@@ -646,8 +965,13 @@ async function saveCloudProfile() {
     memory: state.settings.memory,
     theme: state.settings.theme,
     language: state.settings.language,
+    send_delay: state.settings.sendDelay,
+    conversation_mode: state.settings.conversationMode,
+    custom_mode_prompt: state.settings.customModePrompt,
+    save_history: state.settings.saveHistory,
     updated_at: new Date().toISOString()
   }, { onConflict: "id" });
+  state.profileSchemaReady = !error;
   return !error;
 }
 
@@ -665,17 +989,25 @@ function updateTimer() {
 }
 
 function startCall() {
+  beginCall();
+}
+
+function beginCall(initialMessages = null, conversationId = null) {
   clearTimeout(state.sendTimer);
   abortActiveResponse(false);
-  state.messages = [{ role: "assistant", content: openingLine() }];
+  const restored = safeConversationMessages(initialMessages);
+  state.messages = restored.length ? restored : [{ role: "assistant", content: openingLine() }];
   state.liveUserIndex = -1;
   state.liveAssistantIndex = -1;
   state.lastSubmittedText = "";
   state.deletingCurrentTurn = false;
+  state.currentConversationId = conversationId;
+  state.callKey = typeof crypto.randomUUID === "function" ? crypto.randomUUID() : String(Date.now());
   state.callStartedAt = Date.now();
   state.durationSeconds = 0;
-  elements.aiCopy.textContent = state.messages[0].content;
+  elements.aiCopy.textContent = [...state.messages].reverse().find((message) => message.role === "assistant")?.content || openingLine();
   elements.aiCopy.classList.remove("is-streaming");
+  renderActions([]);
   elements.messageInput.value = "";
   updateInputState();
   updateTimer();
@@ -712,6 +1044,7 @@ function endCall() {
   elements.finalDuration.textContent = formatDuration(state.durationSeconds);
   elements.finalTurns.textContent = String(state.messages.filter((message) => message.role === "user").length);
   setScreen("end");
+  queueHistorySave();
 }
 
 function callAgain() {
@@ -729,7 +1062,9 @@ function updateInputState() {
 function scheduleSend() {
   clearTimeout(state.sendTimer);
   if (!elements.messageInput.value.trim()) return;
-  const delay = state.composing ? COMPOSITION_SEND_DELAY_MS : SEND_DELAY_MS;
+  if (state.settings.sendDelay === "manual") return;
+  const baseDelay = SEND_DELAYS_MS[state.settings.sendDelay] || SEND_DELAYS_MS.normal;
+  const delay = state.composing ? baseDelay + 300 : baseDelay;
   state.sendTimer = window.setTimeout(sendDraft, delay);
 }
 
@@ -738,6 +1073,7 @@ function handleInput() {
   if (state.activeRequest) abortActiveResponse(true);
 
   const content = elements.messageInput.value.trim();
+  if (content !== state.lastSubmittedText) renderActions([]);
   if (!content) {
     clearTimeout(state.sendTimer);
     state.liveUserIndex = -1;
@@ -768,7 +1104,6 @@ function handleKeyDown(event) {
 function beginComposition() {
   state.composing = true;
   clearTimeout(state.sendTimer);
-  scheduleSend();
 }
 
 function endComposition() {
@@ -788,8 +1123,9 @@ async function sendDraft() {
   updateInputState();
 
   const controller = new AbortController();
-  const requestState = { controller, text: "", settled: false };
+  const requestState = { controller, text: "", actionJson: "", settled: false };
   state.activeRequest = requestState;
+  renderActions([]);
   elements.aiCopy.textContent = "";
   elements.aiCopy.classList.add("is-streaming");
   setStatus("thinking", translate("thinking", { name: aiName() }));
@@ -817,14 +1153,7 @@ async function sendDraft() {
       for (const streamEvent of parsed.events) {
         const streamError = eventError(streamEvent);
         if (streamError) throw new Error(streamError);
-        const delta = textDelta(streamEvent);
-        const finalText = requestState.text ? "" : completedText(streamEvent);
-        const nextText = delta || finalText;
-        if (!nextText) continue;
-        requestState.text += nextText;
-        elements.aiCopy.textContent = requestState.text;
-        elements.aiCopy.scrollTop = elements.aiCopy.scrollHeight;
-        setStatus("replying", translate("replying", { name: aiName() }));
+        processStreamEvent(streamEvent, requestState);
       }
 
       if (done) {
@@ -832,9 +1161,7 @@ async function sendDraft() {
         for (const streamEvent of tail.events) {
           const streamError = eventError(streamEvent);
           if (streamError) throw new Error(streamError);
-          const delta = textDelta(streamEvent);
-          const finalText = requestState.text ? "" : completedText(streamEvent);
-          requestState.text += delta || finalText;
+          processStreamEvent(streamEvent, requestState);
         }
         if (requestState.text) elements.aiCopy.textContent = requestState.text;
         break;
@@ -854,9 +1181,99 @@ async function sendDraft() {
   }
 }
 
+function processStreamEvent(streamEvent, requestState) {
+  const argumentDelta = functionArgumentsDelta(streamEvent);
+  if (argumentDelta) requestState.actionJson += argumentDelta;
+  if (!requestState.actionJson) {
+    requestState.actionJson = completedFunctionArguments(streamEvent) || responseFunctionArguments(streamEvent);
+  }
+
+  const delta = textDelta(streamEvent);
+  const finalText = requestState.text ? "" : completedText(streamEvent);
+  const nextText = delta || finalText;
+  if (!nextText) return;
+  requestState.text += nextText;
+  elements.aiCopy.textContent = requestState.text;
+  elements.aiCopy.scrollTop = elements.aiCopy.scrollHeight;
+  setStatus("replying", translate("replying", { name: aiName() }));
+}
+
+function parseActions(source) {
+  if (!source) return [];
+  try {
+    const parsed = JSON.parse(source);
+    if (!Array.isArray(parsed?.actions)) return [];
+    return parsed.actions
+      .filter((action) => action && (action.type === "reply" || action.type === "remember")
+        && typeof action.label === "string" && typeof action.value === "string")
+      .map((action) => ({
+        type: action.type,
+        label: action.label.trim().slice(0, 40),
+        value: action.value.trim().slice(0, action.type === "reply" ? MAX_INPUT_CHARS : 280)
+      }))
+      .filter((action) => action.label && action.value)
+      .slice(0, 3);
+  } catch {
+    return [];
+  }
+}
+
+function renderActions(actions) {
+  elements.assistantActions.replaceChildren();
+  elements.assistantActions.classList.toggle("is-hidden", actions.length === 0);
+  for (const action of actions) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.dataset.actionType = action.type;
+    button.dataset.actionValue = action.value;
+    button.textContent = action.label;
+    elements.assistantActions.append(button);
+  }
+}
+
+async function handleAssistantAction(event) {
+  const button = event.target.closest("button[data-action-type]");
+  if (!button) return;
+  const type = button.dataset.actionType;
+  const value = button.dataset.actionValue?.trim() || "";
+  if (!value) return;
+  renderActions([]);
+
+  if (type === "remember") {
+    const existing = state.settings.memory;
+    if (existing.toLocaleLowerCase().includes(value.toLocaleLowerCase())) {
+      showToast(translate("remembered"));
+      return;
+    }
+    const combined = [existing, value].filter(Boolean).join("\n").slice(0, 500);
+    if (combined.length <= existing.length) {
+      showToast(translate("memoryFull"));
+      return;
+    }
+    state.settings = normalizeSettings({ ...state.settings, memory: combined });
+    storeSettings();
+    if (state.authUser && state.supabase) await saveCloudProfile();
+    showToast(translate("remembered"));
+    return;
+  }
+
+  clearTimeout(state.sendTimer);
+  abortActiveResponse(true);
+  state.liveUserIndex = -1;
+  state.liveAssistantIndex = -1;
+  state.lastSubmittedText = "";
+  state.deletingCurrentTurn = false;
+  elements.messageInput.value = value.slice(0, MAX_INPUT_CHARS);
+  updateInputState();
+  elements.messageInput.focus({ preventScroll: true });
+  await sendDraft();
+}
+
 function settleResponse(requestState, interrupted) {
   if (requestState.settled) return;
   requestState.settled = true;
+  const actions = interrupted ? [] : parseActions(requestState.actionJson);
+  if (!requestState.text.trim() && actions.length) requestState.text = translate("chooseAction");
   if (requestState.text.trim()) {
     const content = requestState.text.trim();
     if (state.liveAssistantIndex >= 0 && state.messages[state.liveAssistantIndex]) {
@@ -867,9 +1284,11 @@ function settleResponse(requestState, interrupted) {
       trimHistory();
     }
   }
+  renderActions(actions);
   if (state.activeRequest === requestState) state.activeRequest = null;
   elements.aiCopy.classList.remove("is-streaming");
   setStatus("ready", translate(interrupted ? "stopped" : "finished", { name: aiName() }));
+  if (!interrupted) queueHistorySave();
 }
 
 function updateLiveUserSnapshot(content) {
@@ -894,6 +1313,51 @@ function trimHistory() {
   state.messages = state.messages.slice(overflow);
   state.liveUserIndex = Math.max(-1, state.liveUserIndex - overflow);
   state.liveAssistantIndex = Math.max(-1, state.liveAssistantIndex - overflow);
+}
+
+function queueHistorySave() {
+  if (!state.settings.saveHistory || !state.supabase || !state.authUser) return;
+  const messages = state.messages.map((message) => ({ ...message }));
+  const firstUser = messages.find((message) => message.role === "user");
+  if (!firstUser) return;
+  const payload = {
+    callKey: state.callKey,
+    conversationId: state.currentConversationId,
+    userId: state.authUser.id,
+    title: firstUser.content.slice(0, 80),
+    messages
+  };
+  state.historySaveQueue = state.historySaveQueue
+    .then(() => persistConversation(payload))
+    .catch(() => showHistorySaveError());
+}
+
+async function persistConversation(payload) {
+  if (!state.supabase) return;
+  const isCurrentCall = payload.callKey === state.callKey;
+  const conversationId = isCurrentCall ? state.currentConversationId : payload.conversationId;
+  const values = {
+    user_id: payload.userId,
+    title: payload.title,
+    messages: payload.messages,
+    updated_at: new Date().toISOString()
+  };
+
+  if (conversationId) {
+    const { error } = await state.supabase.from("conversations").update(values).eq("id", conversationId);
+    if (error) throw error;
+  } else {
+    const { data, error } = await state.supabase.from("conversations").insert(values).select("id").single();
+    if (error) throw error;
+    if (isCurrentCall) state.currentConversationId = data.id;
+  }
+  state.historyErrorShown = false;
+}
+
+function showHistorySaveError() {
+  if (state.historyErrorShown) return;
+  state.historyErrorShown = true;
+  showToast(translate("historySaveFailed"));
 }
 
 function abortActiveResponse(keepPartial) {
@@ -945,6 +1409,57 @@ function showToast(message) {
   state.toastTimer = window.setTimeout(() => elements.toast.classList.remove("is-visible"), 2200);
 }
 
+function isStandalone() {
+  return window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+}
+
+async function installApp() {
+  if (isStandalone()) {
+    showToast(translate("appInstalled"));
+    return;
+  }
+  if (state.installPrompt) {
+    await state.installPrompt.prompt();
+    const choice = await state.installPrompt.userChoice;
+    state.installPrompt = null;
+    if (choice.outcome === "accepted") elements.installApp.classList.add("is-hidden");
+    return;
+  }
+  const isiOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  showToast(translate(isiOS ? "installIos" : "installUnavailable"));
+}
+
+function offerAppUpdate(worker) {
+  state.waitingWorker = worker;
+  elements.updateApp.classList.remove("is-hidden");
+}
+
+async function registerServiceWorker() {
+  if (!("serviceWorker" in navigator)) return;
+  try {
+    const registration = await navigator.serviceWorker.register("/sw.js");
+    if (registration.waiting) offerAppUpdate(registration.waiting);
+    registration.addEventListener("updatefound", () => {
+      const installing = registration.installing;
+      installing?.addEventListener("statechange", () => {
+        if (installing.state === "installed" && navigator.serviceWorker.controller) offerAppUpdate(installing);
+      });
+    });
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (!state.reloadingForUpdate) return;
+      window.location.reload();
+    });
+  } catch {
+    // A service worker is an enhancement; the live call remains usable without it.
+  }
+}
+
+function updateApp() {
+  if (!state.waitingWorker) return;
+  state.reloadingForUpdate = true;
+  state.waitingWorker.postMessage({ type: "SKIP_WAITING" });
+}
+
 function updateViewportHeight() {
   const height = window.visualViewport?.height ?? window.innerHeight;
   document.documentElement.style.setProperty("--app-height", `${Math.round(height)}px`);
@@ -957,13 +1472,20 @@ elements.closeSettings.addEventListener("click", closeSettings);
 elements.settingsForm.addEventListener("submit", saveSettings);
 elements.googleSignIn.addEventListener("click", signInWithGoogle);
 elements.signOut.addEventListener("click", signOut);
+elements.openHistory.addEventListener("click", openHistory);
+elements.closeHistory.addEventListener("click", closeHistory);
+elements.clearHistory.addEventListener("click", clearHistory);
+elements.resetPersonalization.addEventListener("click", resetPersonalization);
+elements.deleteAccount.addEventListener("click", deleteAccount);
 elements.toneControl.addEventListener("click", (event) => selectChoice(event, "tone"));
 elements.lengthControl.addEventListener("click", (event) => selectChoice(event, "length"));
+elements.modeSelect.addEventListener("change", updateCustomModeField);
 elements.startCall.addEventListener("click", startCall);
 elements.endCall.addEventListener("click", endCall);
 elements.callAgain.addEventListener("click", callAgain);
 elements.copyTranscript.addEventListener("click", copyTranscript);
 elements.userPanel.addEventListener("click", () => elements.messageInput.focus({ preventScroll: true }));
+elements.assistantActions.addEventListener("click", handleAssistantAction);
 elements.messageInput.addEventListener("input", handleInput);
 elements.messageInput.addEventListener("keydown", handleKeyDown);
 elements.messageInput.addEventListener("compositionstart", beginComposition);
@@ -974,9 +1496,22 @@ window.addEventListener("resize", updateViewportHeight);
 window.addEventListener("pagehide", () => abortActiveResponse(false));
 window.addEventListener("online", () => state.screen === "call" && setStatus("ready", translate("connectionRestored")));
 window.addEventListener("offline", () => state.screen === "call" && setStatus("offline", translate("connectionLost")));
+window.addEventListener("beforeinstallprompt", (event) => {
+  event.preventDefault();
+  state.installPrompt = event;
+});
+window.addEventListener("appinstalled", () => {
+  state.installPrompt = null;
+  elements.installApp.classList.add("is-hidden");
+  showToast(translate("appInstalled"));
+});
+elements.installApp.addEventListener("click", installApp);
+elements.updateApp.addEventListener("click", updateApp);
 
 applySettings();
 updateViewportHeight();
 setScreen("start");
 renderAccount();
 void initAuth();
+if (isStandalone()) elements.installApp.classList.add("is-hidden");
+void registerServiceWorker();

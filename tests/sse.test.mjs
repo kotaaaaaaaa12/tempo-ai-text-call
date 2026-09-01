@@ -1,6 +1,14 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { completedText, eventError, parseSseBuffer, textDelta } from "../public/sse.js";
+import {
+  completedFunctionArguments,
+  completedText,
+  eventError,
+  functionArgumentsDelta,
+  parseSseBuffer,
+  responseFunctionArguments,
+  textDelta
+} from "../src/shared/sse.js";
 
 test("parses complete SSE blocks and retains an incomplete tail", () => {
   const source = [
@@ -36,4 +44,19 @@ test("extracts errors that arrive inside a successful stream", () => {
     eventError({ type: "response.failed", response: { error: { message: "Model unavailable" } } }),
     "Model unavailable"
   );
+});
+
+test("extracts streamed and completed action function arguments", () => {
+  assert.equal(functionArgumentsDelta({
+    type: "response.function_call_arguments.delta",
+    delta: "{\"actions\":["
+  }), "{\"actions\":[");
+  assert.equal(completedFunctionArguments({
+    type: "response.function_call_arguments.done",
+    arguments: "{\"actions\":[]}"
+  }), "{\"actions\":[]}");
+  assert.equal(responseFunctionArguments({
+    type: "response.completed",
+    response: { output: [{ type: "function_call", name: "show_actions", arguments: "{\"actions\":[]}" }] }
+  }), "{\"actions\":[]}");
 });
