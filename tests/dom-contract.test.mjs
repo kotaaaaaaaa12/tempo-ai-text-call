@@ -31,10 +31,10 @@ test("the application shell uses organized versioned asset paths", async () => {
     readFile(new URL("../public/index.html", import.meta.url), "utf8"),
     readFile(new URL("../public/sw.js", import.meta.url), "utf8")
   ]);
-  assert.match(html, /\/assets\/css\/app\.css\?v=15/);
-  assert.match(html, /\/assets\/js\/app\.js\?v=15/);
+  assert.match(html, /\/assets\/css\/app\.css\?v=16/);
+  assert.match(html, /\/assets\/js\/app\.js\?v=16/);
   assert.match(html, /\/assets\/icons\/favicon\.svg/);
-  assert.match(worker, /tempo-shell-v15/);
+  assert.match(worker, /tempo-shell-v16/);
   assert.doesNotMatch(worker, /"\/sse\.js"/);
 });
 
@@ -110,6 +110,13 @@ test("closing edited settings opens the reusable unsaved-changes dialog", async 
   assert.match(app, /cancelKey: "keepEditing"/);
   assert.match(app, /settingsDialog\.addEventListener\("cancel"/);
   assert.match(app, /closeSettings\.addEventListener\("click", \(\) => closeSettings\(\)\)/);
+});
+
+test("saving settings keeps the dialog open and resets the dirty snapshot", async () => {
+  const app = await readFile(new URL("../src/client/app.js", import.meta.url), "utf8");
+  const saveFunction = app.match(/async function saveSettings\(event\) \{([\s\S]*?)\n\}/)?.[1] || "";
+  assert.match(saveFunction, /state\.formDraft = \{ \.\.\.state\.settings \}/);
+  assert.doesNotMatch(saveFunction, /closeSettings/);
 });
 
 test("settings tabs fit without horizontal scrolling and only the panel scrolls", async () => {

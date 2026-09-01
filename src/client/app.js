@@ -868,6 +868,7 @@ async function saveSettings(event) {
   state.settings = next;
   storeSettings();
   applySettings();
+  state.formDraft = { ...state.settings };
 
   if (state.authUser && state.supabase) {
     const saved = await saveCloudProfile();
@@ -875,7 +876,6 @@ async function saveSettings(event) {
   } else {
     showToast(translate("localSaved"));
   }
-  closeSettings(true);
 }
 
 async function initAuth(showProblem = false) {
