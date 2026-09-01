@@ -13,8 +13,8 @@
     <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
     <link rel="manifest" href="/manifest.webmanifest">
-    <link rel="stylesheet" href="/assets/css/app.css?v=13">
-    <script type="module" src="/assets/js/app.js?v=13"></script>
+    <link rel="stylesheet" href="/assets/css/app.css?v=15">
+    <script type="module" src="/assets/js/app.js?v=15"></script>
   </head>
   <body>
     <main class="app-shell" id="app">
@@ -50,7 +50,7 @@
           </div>
           <time id="call-timer" datetime="PT0S">00:00</time>
           <button class="hangup-button" id="end-call" type="button" aria-label="End call" data-i18n-aria-label="endCall">
-            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 14.5c4.6-3.4 9.4-3.4 14 0m-11.2-.3v3m8.4-3v3"/></svg>
+            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 7C7.44 7 3.32 8.73.29 11.56A.98.98 0 0 0 0 12.27c0 .28.11.53.29.71l2.41 2.41c.18.18.43.29.71.29.26 0 .5-.09.68-.25.81-.68 1.72-1.25 2.7-1.69.37-.16.61-.52.61-.92v-3.1A16.15 16.15 0 0 1 12 9c1.6 0 3.15.25 4.6.72v3.1c0 .4.24.76.61.92.98.44 1.89 1.01 2.7 1.69.18.16.42.25.68.25.28 0 .53-.11.71-.29l2.41-2.41c.18-.18.29-.44.29-.71 0-.28-.11-.53-.29-.71C20.68 8.73 16.56 7 12 7Z"/></svg>
           </button>
         </header>
 
@@ -116,9 +116,28 @@
               <span data-i18n="language">Language</span>
               <select id="language-select" name="language"><option value="auto">Auto</option><option value="en">English</option><option value="ja">日本語</option></select>
             </label>
+            <div class="section-heading appearance-heading"><h3 data-i18n="appearance">Appearance</h3><p data-i18n="appearanceDescription">Adjust the interface without changing how the AI talks.</p></div>
             <label class="theme-row">
-              <span data-i18n="appearance">Appearance</span>
+              <span data-i18n="theme">Theme</span>
               <select id="theme-select" name="theme"><option value="auto" data-i18n="auto">Auto</option><option value="light" data-i18n="light">Light</option><option value="dark" data-i18n="dark">Dark</option></select>
+            </label>
+            <fieldset class="choice-fieldset color-fieldset">
+              <legend data-i18n="accentColor">Accent color</legend>
+              <div class="color-choice-row" id="accent-control">
+                <button type="button" data-accent="default" aria-pressed="true"><span class="color-swatch swatch-default" aria-hidden="true"></span><b data-i18n="accentDefault">Default</b></button>
+                <button type="button" data-accent="coral" aria-pressed="false"><span class="color-swatch swatch-coral" aria-hidden="true"></span><b data-i18n="accentCoral">Coral</b></button>
+                <button type="button" data-accent="blue" aria-pressed="false"><span class="color-swatch swatch-blue" aria-hidden="true"></span><b data-i18n="accentBlue">Blue</b></button>
+                <button type="button" data-accent="violet" aria-pressed="false"><span class="color-swatch swatch-violet" aria-hidden="true"></span><b data-i18n="accentViolet">Violet</b></button>
+                <button type="button" data-accent="green" aria-pressed="false"><span class="color-swatch swatch-green" aria-hidden="true"></span><b data-i18n="accentGreen">Green</b></button>
+              </div>
+            </fieldset>
+            <label class="theme-row">
+              <span data-i18n="fontSize">Text size</span>
+              <select id="font-size-select" name="fontSize"><option value="small" data-i18n="fontSmall">Small</option><option value="standard" data-i18n="fontStandard">Standard</option><option value="large" data-i18n="fontLarge">Large</option></select>
+            </label>
+            <label class="theme-row">
+              <span data-i18n="motion">Animation</span>
+              <select id="motion-select" name="motion"><option value="auto" data-i18n="motionAuto">Auto</option><option value="full" data-i18n="motionFull">Full</option><option value="reduced" data-i18n="motionReduced">Reduced</option><option value="none" data-i18n="motionNone">None</option></select>
             </label>
             <label class="field">
               <span data-i18n="sendTiming">Send timing</span>

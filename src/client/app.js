@@ -15,6 +15,9 @@ const SETTINGS_KEY = "tempo-settings-v2";
 const VALID_TONES = new Set(["casual", "thoughtful", "direct"]);
 const VALID_LENGTHS = new Set(["short", "balanced", "detailed"]);
 const VALID_THEMES = new Set(["auto", "light", "dark"]);
+const VALID_ACCENTS = new Set(["default", "coral", "blue", "violet", "green"]);
+const VALID_FONT_SIZES = new Set(["small", "standard", "large"]);
+const VALID_MOTION = new Set(["auto", "full", "reduced", "none"]);
 const VALID_LANGUAGES = new Set(["auto", "en", "ja"]);
 const VALID_SEND_DELAYS = new Set(["fast", "normal", "slow", "manual"]);
 const VALID_MODES = new Set(["general", "study", "english", "brainstorm", "advice", "custom"]);
@@ -27,6 +30,9 @@ const DEFAULT_SETTINGS = Object.freeze({
   replyLength: "short",
   memory: "",
   theme: "auto",
+  accent: "default",
+  fontSize: "standard",
+  motion: "auto",
   language: "auto",
   sendDelay: "normal",
   conversationMode: "general",
@@ -95,6 +101,23 @@ const TRANSLATIONS = {
     memoryNote: "Changes are applied when you save settings. Conversation transcripts are never included.",
     language: "Language",
     appearance: "Appearance",
+    appearanceDescription: "Adjust the interface without changing how the AI talks.",
+    theme: "Theme",
+    accentColor: "Accent color",
+    accentDefault: "Default",
+    accentCoral: "Coral",
+    accentBlue: "Blue",
+    accentViolet: "Violet",
+    accentGreen: "Green",
+    fontSize: "Text size",
+    fontSmall: "Small",
+    fontStandard: "Standard",
+    fontLarge: "Large",
+    motion: "Animation",
+    motionAuto: "Auto",
+    motionFull: "Full",
+    motionReduced: "Reduced",
+    motionNone: "None",
     auto: "Auto",
     light: "Light",
     dark: "Dark",
@@ -255,6 +278,23 @@ const TRANSLATIONS = {
     memoryNote: "「設定を保存」を押すと変更されます。会話ログは含まれません。",
     language: "言語",
     appearance: "外観",
+    appearanceDescription: "AIの話し方とは別に画面表示を調整できます。",
+    theme: "テーマ",
+    accentColor: "アクセントカラー",
+    accentDefault: "標準",
+    accentCoral: "コーラル",
+    accentBlue: "ブルー",
+    accentViolet: "パープル",
+    accentGreen: "グリーン",
+    fontSize: "文字サイズ",
+    fontSmall: "小",
+    fontStandard: "標準",
+    fontLarge: "大",
+    motion: "アニメーション",
+    motionAuto: "自動",
+    motionFull: "通常",
+    motionReduced: "少なめ",
+    motionNone: "なし",
     auto: "自動",
     light: "ライト",
     dark: "ダーク",
@@ -397,6 +437,9 @@ const elements = {
   saveHistoryInput: document.querySelector("#save-history-input"),
   languageSelect: document.querySelector("#language-select"),
   themeSelect: document.querySelector("#theme-select"),
+  accentControl: document.querySelector("#accent-control"),
+  fontSizeSelect: document.querySelector("#font-size-select"),
+  motionSelect: document.querySelector("#motion-select"),
   toneControl: document.querySelector("#tone-control"),
   lengthControl: document.querySelector("#length-control"),
   aiNameLabels: document.querySelectorAll("[data-ai-name]"),
@@ -490,6 +533,9 @@ function normalizeSettings(value) {
     replyLength: VALID_LENGTHS.has(candidate.replyLength) ? candidate.replyLength : DEFAULT_SETTINGS.replyLength,
     memory: typeof candidate.memory === "string" ? candidate.memory.trim().slice(0, 500) : "",
     theme: VALID_THEMES.has(candidate.theme) ? candidate.theme : DEFAULT_SETTINGS.theme,
+    accent: VALID_ACCENTS.has(candidate.accent) ? candidate.accent : DEFAULT_SETTINGS.accent,
+    fontSize: VALID_FONT_SIZES.has(candidate.fontSize) ? candidate.fontSize : DEFAULT_SETTINGS.fontSize,
+    motion: VALID_MOTION.has(candidate.motion) ? candidate.motion : DEFAULT_SETTINGS.motion,
     language: VALID_LANGUAGES.has(candidate.language) ? candidate.language : DEFAULT_SETTINGS.language,
     sendDelay: VALID_SEND_DELAYS.has(candidate.sendDelay) ? candidate.sendDelay : DEFAULT_SETTINGS.sendDelay,
     conversationMode: VALID_MODES.has(candidate.conversationMode) ? candidate.conversationMode : DEFAULT_SETTINGS.conversationMode,
@@ -589,6 +635,9 @@ function applySettings() {
   } else {
     document.documentElement.dataset.theme = state.settings.theme;
   }
+  document.documentElement.dataset.accent = state.settings.accent;
+  document.documentElement.dataset.fontSize = state.settings.fontSize;
+  document.documentElement.dataset.motion = state.settings.motion;
   applyTranslations();
   for (const label of elements.aiNameLabels) label.textContent = aiName();
   elements.startTitle.textContent = translate("talkTo", { name: aiName() });
@@ -617,7 +666,10 @@ function fillSettingsForm() {
   elements.saveHistoryInput.checked = state.formDraft.saveHistory;
   elements.languageSelect.value = state.formDraft.language;
   elements.themeSelect.value = state.formDraft.theme;
+  elements.fontSizeSelect.value = state.formDraft.fontSize;
+  elements.motionSelect.value = state.formDraft.motion;
   updateCustomModeField();
+  applyChoiceState(elements.accentControl, "accent", state.formDraft.accent);
   applyChoiceState(elements.toneControl, "tone", state.formDraft.tone);
   applyChoiceState(elements.lengthControl, "length", state.formDraft.replyLength);
   renderMemoryList();
@@ -696,6 +748,7 @@ function selectChoice(event, key) {
   const value = button.dataset[key];
   if (key === "tone" && VALID_TONES.has(value)) state.formDraft.tone = value;
   if (key === "length" && VALID_LENGTHS.has(value)) state.formDraft.replyLength = value;
+  if (key === "accent" && VALID_ACCENTS.has(value)) state.formDraft.accent = value;
   applyChoiceState(event.currentTarget, key, value);
 }
 
@@ -760,7 +813,10 @@ function collectSettingsForm() {
     sendDelay: elements.sendDelaySelect.value,
     saveHistory: elements.saveHistoryInput.checked,
     language: elements.languageSelect.value,
-    theme: elements.themeSelect.value
+    theme: elements.themeSelect.value,
+    accent: state.formDraft?.accent ?? state.settings.accent,
+    fontSize: elements.fontSizeSelect.value,
+    motion: elements.motionSelect.value
   });
 }
 
@@ -950,6 +1006,9 @@ async function resetPersonalization() {
     ...DEFAULT_SETTINGS,
     displayName: state.settings.displayName,
     theme: state.settings.theme,
+    accent: state.settings.accent,
+    fontSize: state.settings.fontSize,
+    motion: state.settings.motion,
     language: state.settings.language,
     sendDelay: state.settings.sendDelay,
     saveHistory: state.settings.saveHistory
@@ -1159,9 +1218,20 @@ async function loadCloudProfile() {
   state.profileSchemaReady = true;
   let { data, error } = await state.supabase
     .from("profiles")
-    .select("display_name,ai_name,tone,reply_length,memory,theme,language,send_delay,conversation_mode,custom_mode_prompt,save_history")
+    .select("display_name,ai_name,tone,reply_length,memory,theme,accent,font_size,motion,language,send_delay,conversation_mode,custom_mode_prompt,save_history")
     .eq("id", state.authUser.id)
     .maybeSingle();
+
+  if (error && /(accent|font_size|motion)/i.test(error.message || "")) {
+    state.profileSchemaReady = false;
+    const fallback = await state.supabase
+      .from("profiles")
+      .select("display_name,ai_name,tone,reply_length,memory,theme,language,send_delay,conversation_mode,custom_mode_prompt,save_history")
+      .eq("id", state.authUser.id)
+      .maybeSingle();
+    data = fallback.data;
+    error = fallback.error;
+  }
 
   if (error && /(language|send_delay|conversation_mode|custom_mode_prompt|save_history)/i.test(error.message || "")) {
     state.profileSchemaReady = false;
@@ -1188,6 +1258,9 @@ async function loadCloudProfile() {
       replyLength: data.reply_length,
       memory: data.memory,
       theme: data.theme,
+      accent: data.accent ?? state.settings.accent,
+      fontSize: data.font_size ?? state.settings.fontSize,
+      motion: data.motion ?? state.settings.motion,
       language: data.language ?? state.settings.language,
       sendDelay: data.send_delay ?? state.settings.sendDelay,
       conversationMode: data.conversation_mode ?? state.settings.conversationMode,
@@ -1220,6 +1293,9 @@ async function saveCloudProfile() {
     reply_length: state.settings.replyLength,
     memory: state.settings.memory,
     theme: state.settings.theme,
+    accent: state.settings.accent,
+    font_size: state.settings.fontSize,
+    motion: state.settings.motion,
     language: state.settings.language,
     send_delay: state.settings.sendDelay,
     conversation_mode: state.settings.conversationMode,
@@ -1748,6 +1824,7 @@ elements.confirmDialog.addEventListener("cancel", (event) => {
   event.preventDefault();
   closeConfirmation();
 });
+elements.accentControl.addEventListener("click", (event) => selectChoice(event, "accent"));
 elements.toneControl.addEventListener("click", (event) => selectChoice(event, "tone"));
 elements.lengthControl.addEventListener("click", (event) => selectChoice(event, "length"));
 elements.modeSelect.addEventListener("change", updateCustomModeField);

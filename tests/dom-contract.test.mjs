@@ -31,11 +31,21 @@ test("the application shell uses organized versioned asset paths", async () => {
     readFile(new URL("../public/index.html", import.meta.url), "utf8"),
     readFile(new URL("../public/sw.js", import.meta.url), "utf8")
   ]);
-  assert.match(html, /\/assets\/css\/app\.css\?v=13/);
-  assert.match(html, /\/assets\/js\/app\.js\?v=13/);
+  assert.match(html, /\/assets\/css\/app\.css\?v=15/);
+  assert.match(html, /\/assets\/js\/app\.js\?v=15/);
   assert.match(html, /\/assets\/icons\/favicon\.svg/);
-  assert.match(worker, /tempo-shell-v13/);
+  assert.match(worker, /tempo-shell-v15/);
   assert.doesNotMatch(worker, /"\/sse\.js"/);
+});
+
+test("the hang-up control uses a filled handset icon", async () => {
+  const [html, css] = await Promise.all([
+    readFile(new URL("../public/index.html", import.meta.url), "utf8"),
+    readFile(new URL("../public/assets/css/app.css", import.meta.url), "utf8")
+  ]);
+  assert.match(html, /id="end-call"[\s\S]*?<svg[^>]*viewBox="0 0 24 24"[\s\S]*?<path d="M12 7C7\.44 7/);
+  assert.match(css, /\.hangup-button svg\s*\{[^}]*fill:\s*currentColor/s);
+  assert.doesNotMatch(css, /\.hangup-button svg\s*\{[^}]*fill:\s*none/s);
 });
 
 test("new controls include central actions, tabbed settings, memory, history, and PWA update UI", async () => {
@@ -108,6 +118,29 @@ test("settings tabs fit without horizontal scrolling and only the panel scrolls"
   assert.match(css, /\.settings-tabs\s*\{[^}]*overflow:\s*hidden/s);
   assert.match(css, /\.settings-panels\s*\{[^}]*overflow-x:\s*hidden[^}]*overflow-y:\s*auto/s);
   assert.match(css, /\.settings-form\s*\{[^}]*overflow:\s*hidden/s);
+});
+
+test("appearance settings provide accents, text sizing, and motion without a density control", async () => {
+  const [html, app, css] = await Promise.all([
+    readFile(new URL("../public/index.html", import.meta.url), "utf8"),
+    readFile(new URL("../src/client/app.js", import.meta.url), "utf8"),
+    readFile(new URL("../public/assets/css/app.css", import.meta.url), "utf8")
+  ]);
+
+  for (const id of ["accent-control", "font-size-select", "motion-select"]) {
+    assert.match(html, new RegExp(`id="${id}"`));
+  }
+  assert.doesNotMatch(html, /density|表示間隔/i);
+  assert.match(app, /VALID_ACCENTS/);
+  assert.match(app, /VALID_FONT_SIZES/);
+  assert.match(app, /VALID_MOTION/);
+  assert.match(app, /dataset\.accent = state\.settings\.accent/);
+  assert.match(app, /dataset\.fontSize = state\.settings\.fontSize/);
+  assert.match(app, /dataset\.motion = state\.settings\.motion/);
+  assert.match(css, /:root\[data-accent="blue"\]/);
+  assert.match(css, /:root\[data-font-size="large"\]/);
+  assert.match(css, /:root\[data-motion="none"\]/);
+  assert.match(css, /font-size:\s*max\(1rem, 16px\)/);
 });
 
 test("Japanese interface copy is friendly in conversation and clear for actions", async () => {

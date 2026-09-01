@@ -20,3 +20,13 @@ test("the schema adds private history, personalization fields, and self-service 
   assert.match(sql, /function public\.delete_current_user\(\)/i);
   assert.match(sql, /revoke all on function public\.delete_current_user\(\) from anon/i);
 });
+
+test("the profile migration adds synchronized appearance preferences", async () => {
+  const sql = await readFile(new URL("../supabase/schema.sql", import.meta.url), "utf8");
+  assert.match(sql, /add column if not exists accent/i);
+  assert.match(sql, /accent in \('default', 'coral', 'blue', 'violet', 'green'\)/i);
+  assert.match(sql, /add column if not exists font_size/i);
+  assert.match(sql, /font_size in \('small', 'standard', 'large'\)/i);
+  assert.match(sql, /add column if not exists motion/i);
+  assert.match(sql, /motion in \('auto', 'full', 'reduced', 'none'\)/i);
+});

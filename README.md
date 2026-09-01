@@ -28,6 +28,9 @@ Keep `public/assets/js/app.js` committed for direct Worker deploys, but edit `sr
 ## Features
 
 - Minimal mobile interface with light and dark themes
+- Default, coral, blue, violet, and green accent choices while preserving the original look for existing users
+- Small, standard, and large interface text sizes with iOS input zoom protection
+- Auto, full, reduced, and disabled animation settings with system reduced-motion support
 - English and Japanese UI with Auto, English, and Japanese language settings
 - Adjustable send timing: 0.9 seconds, 1.5 seconds, 2.5 seconds, or Enter only
 - Japanese IME handling with an extra composition delay for iOS Safari
@@ -132,7 +135,7 @@ The committed browser bundle allows the previous `npx wrangler deploy` command t
 - Guests keep settings in browser storage.
 - Google users synchronize settings through the `profiles` table.
 - Auto language uses Japanese only when the browser's primary language is Japanese. Every other browser language uses English.
-- The current settings are sent with each OpenAI request so the server can set the AI name, tone, reply length, conversation mode, and relevant user context.
+- The current settings are sent with each OpenAI request so the server can set the AI name, tone, reply length, conversation mode, and relevant user context. Interface-only appearance settings are ignored by the AI.
 - Remembered text is treated as untrusted user background, not as system instructions.
 - Suggested memories are never saved automatically; the user must tap the clearly labeled memory action.
 - Conversation history is off by default and requires Google sign-in. When enabled, the app saves only to the signed-in user's RLS-protected rows in Supabase.

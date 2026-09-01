@@ -6,6 +6,9 @@ create table if not exists public.profiles (
   reply_length text not null default 'short' check (reply_length in ('short', 'balanced', 'detailed')),
   memory text not null default '' check (char_length(memory) <= 500),
   theme text not null default 'auto' check (theme in ('auto', 'light', 'dark')),
+  accent text not null default 'default' check (accent in ('default', 'coral', 'blue', 'violet', 'green')),
+  font_size text not null default 'standard' check (font_size in ('small', 'standard', 'large')),
+  motion text not null default 'auto' check (motion in ('auto', 'full', 'reduced', 'none')),
   language text not null default 'auto' check (language in ('auto', 'en', 'ja')),
   send_delay text not null default 'normal' check (send_delay in ('fast', 'normal', 'slow', 'manual')),
   conversation_mode text not null default 'general' check (conversation_mode in ('general', 'study', 'english', 'brainstorm', 'advice', 'custom')),
@@ -22,6 +25,21 @@ drop constraint if exists profiles_language_check;
 
 alter table public.profiles
 add constraint profiles_language_check check (language in ('auto', 'en', 'ja'));
+
+alter table public.profiles
+add column if not exists accent text not null default 'default',
+add column if not exists font_size text not null default 'standard',
+add column if not exists motion text not null default 'auto';
+
+alter table public.profiles
+drop constraint if exists profiles_accent_check,
+drop constraint if exists profiles_font_size_check,
+drop constraint if exists profiles_motion_check;
+
+alter table public.profiles
+add constraint profiles_accent_check check (accent in ('default', 'coral', 'blue', 'violet', 'green')),
+add constraint profiles_font_size_check check (font_size in ('small', 'standard', 'large')),
+add constraint profiles_motion_check check (motion in ('auto', 'full', 'reduced', 'none'));
 
 alter table public.profiles
 add column if not exists send_delay text not null default 'normal',
