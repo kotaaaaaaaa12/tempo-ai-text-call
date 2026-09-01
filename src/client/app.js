@@ -67,6 +67,12 @@ const TRANSLATIONS = {
     personalize: "Personalize",
     settings: "Settings",
     closeSettings: "Close settings",
+    settingsSections: "Settings sections",
+    tabGeneral: "General",
+    tabAI: "AI",
+    tabMemory: "Memory",
+    tabHistory: "History",
+    tabAccount: "Account",
     callYou: "What should the AI call you?",
     yourName: "Your name",
     aiName: "AI name",
@@ -80,7 +86,13 @@ const TRANSLATIONS = {
     detailed: "Detailed",
     remember: "Things to remember",
     memoryPlaceholder: "Interests, goals, preferences…",
-    memoryNote: "Only saved when you choose Save. Conversation transcripts are never included.",
+    savedMemories: "Saved memories",
+    memoryDescription: "Details the AI can use in future calls.",
+    memoryEmpty: "Nothing saved yet.",
+    addMemory: "Add a memory",
+    add: "Add",
+    removeMemory: "Remove memory: {memory}",
+    memoryNote: "Changes are applied when you save settings. Conversation transcripts are never included.",
     language: "Language",
     appearance: "Appearance",
     auto: "Auto",
@@ -149,15 +161,20 @@ const TRANSLATIONS = {
     historySaved: "Call saved to history",
     historySaveFailed: "Could not save this call. Run the latest supabase/schema.sql.",
     clearHistory: "Clear all history",
-    clearHistoryConfirm: "Delete all saved calls? This cannot be undone.",
+    clearHistoryConfirm: "Delete all saved calls?",
+    clearHistoryDescription: "Every saved call in your account will be permanently deleted.",
     deleteCallConfirm: "Delete this saved call?",
+    deleteCallDescription: "This saved call will be permanently deleted.",
+    deleteCall: "Delete call",
     resumeCall: "Resume call",
     turnCount: "{count} turns",
     resetPersonalization: "Reset personalization",
     resetConfirm: "Reset AI name, tone, mode, and remembered details?",
+    resetDescription: "Your general settings and saved call history will stay unchanged.",
     personalizationReset: "Personalization reset",
     deleteAccount: "Delete account",
     dangerZone: "Danger zone",
+    confirm: "Please confirm",
     deleteAccountTitle: "Delete account?",
     deleteAccountDescription: "Your settings and saved calls will be permanently deleted. This cannot be undone.",
     cancel: "Cancel",
@@ -206,6 +223,12 @@ const TRANSLATIONS = {
     personalize: "パーソナライズ",
     settings: "設定",
     closeSettings: "設定を閉じる",
+    settingsSections: "設定項目",
+    tabGeneral: "一般",
+    tabAI: "AI",
+    tabMemory: "メモリ",
+    tabHistory: "履歴",
+    tabAccount: "アカウント",
     callYou: "AIから何と呼ばれたい？",
     yourName: "あなたの名前",
     aiName: "AIの名前",
@@ -219,7 +242,13 @@ const TRANSLATIONS = {
     detailed: "詳しく",
     remember: "覚えてほしいこと",
     memoryPlaceholder: "興味、目標、好みなど…",
-    memoryNote: "「設定を保存」を押した時だけ保存します。会話ログは含まれません。",
+    savedMemories: "保存されたメモリ",
+    memoryDescription: "今後の通話でAIが使える情報です。",
+    memoryEmpty: "保存されたメモリはまだありません。",
+    addMemory: "メモリを追加",
+    add: "追加",
+    removeMemory: "メモリを削除: {memory}",
+    memoryNote: "「設定を保存」を押すと変更されます。会話ログは含まれません。",
     language: "言語",
     appearance: "外観",
     auto: "自動",
@@ -288,15 +317,20 @@ const TRANSLATIONS = {
     historySaved: "会話を履歴に保存しました",
     historySaveFailed: "会話を保存できませんでした。最新のsupabase/schema.sqlを実行してね。",
     clearHistory: "履歴をすべて削除",
-    clearHistoryConfirm: "保存した会話を全部削除する？ 元には戻せません。",
+    clearHistoryConfirm: "保存した会話を全部削除する？",
+    clearHistoryDescription: "アカウントに保存されたすべての会話を完全に削除します。",
     deleteCallConfirm: "この会話を削除する？",
+    deleteCallDescription: "この保存済み会話を完全に削除します。",
+    deleteCall: "会話を削除",
     resumeCall: "通話を再開",
     turnCount: "{count}ターン",
     resetPersonalization: "パーソナライズをリセット",
     resetConfirm: "AIの名前・話し方・モード・覚えた内容をリセットする？",
+    resetDescription: "一般設定と保存した会話履歴はそのまま残ります。",
     personalizationReset: "パーソナライズをリセットしました",
     deleteAccount: "アカウントを削除",
     dangerZone: "注意",
+    confirm: "確認",
     deleteAccountTitle: "アカウントを削除する？",
     deleteAccountDescription: "設定と保存した会話を完全に削除します。この操作は元に戻せません。",
     cancel: "キャンセル",
@@ -322,27 +356,32 @@ const elements = {
     end: document.querySelector("#end-screen")
   },
   accountButton: document.querySelector("#account-button"),
-  accountDialog: document.querySelector("#account-dialog"),
-  accountTitle: document.querySelector("#account-title"),
-  closeAccount: document.querySelector("#close-account"),
   settingsButton: document.querySelector("#settings-button"),
   settingsDialog: document.querySelector("#settings-dialog"),
   settingsForm: document.querySelector("#settings-form"),
   closeSettings: document.querySelector("#close-settings"),
+  settingsTabs: document.querySelector(".settings-tabs"),
+  settingsTabButtons: document.querySelectorAll("[data-settings-tab]"),
+  settingsPanels: document.querySelectorAll("[data-settings-panel]"),
   googleSignIn: document.querySelector("#google-sign-in"),
   signOut: document.querySelector("#sign-out"),
   accountActions: document.querySelector("#account-actions"),
-  openHistory: document.querySelector("#open-history"),
   resetPersonalization: document.querySelector("#reset-personalization"),
   deleteAccount: document.querySelector("#delete-account"),
-  deleteAccountDialog: document.querySelector("#delete-account-dialog"),
-  cancelDeleteAccount: document.querySelector("#cancel-delete-account"),
-  confirmDeleteAccount: document.querySelector("#confirm-delete-account"),
+  confirmDialog: document.querySelector("#confirm-dialog"),
+  confirmEyebrow: document.querySelector("#confirm-eyebrow"),
+  confirmTitle: document.querySelector("#confirm-title"),
+  confirmDescription: document.querySelector("#confirm-description"),
+  cancelConfirm: document.querySelector("#cancel-confirm"),
+  confirmAction: document.querySelector("#confirm-action"),
   accountName: document.querySelector("#account-name"),
   accountStatus: document.querySelector("#account-status"),
   displayNameInput: document.querySelector("#display-name-input"),
   aiNameInput: document.querySelector("#ai-name-input"),
-  memoryInput: document.querySelector("#memory-input"),
+  memoryList: document.querySelector("#memory-list"),
+  memoryEmpty: document.querySelector("#memory-empty"),
+  memoryAddInput: document.querySelector("#memory-add-input"),
+  addMemory: document.querySelector("#add-memory"),
   modeSelect: document.querySelector("#mode-select"),
   customModeField: document.querySelector("#custom-mode-field"),
   customModeInput: document.querySelector("#custom-mode-input"),
@@ -372,8 +411,6 @@ const elements = {
   finalDuration: document.querySelector("#final-duration"),
   finalTurns: document.querySelector("#final-turns"),
   transcript: document.querySelector("#transcript"),
-  historyDialog: document.querySelector("#history-dialog"),
-  closeHistory: document.querySelector("#close-history"),
   historyNote: document.querySelector("#history-note"),
   historyList: document.querySelector("#history-list"),
   clearHistory: document.querySelector("#clear-history"),
@@ -413,7 +450,9 @@ const state = {
   waitingWorker: null,
   reloadingForUpdate: false,
   historyErrorShown: false,
-  profileSchemaReady: true
+  profileSchemaReady: true,
+  settingsTab: "general",
+  pendingConfirmation: null
 };
 
 function readPreference(key, fallback) {
@@ -563,7 +602,7 @@ function fillSettingsForm() {
   state.formDraft = { ...state.settings };
   elements.displayNameInput.value = state.formDraft.displayName;
   elements.aiNameInput.value = state.formDraft.aiName;
-  elements.memoryInput.value = state.formDraft.memory;
+  elements.memoryAddInput.value = "";
   elements.modeSelect.value = state.formDraft.conversationMode;
   elements.customModeInput.value = state.formDraft.customModePrompt;
   elements.sendDelaySelect.value = state.formDraft.sendDelay;
@@ -573,6 +612,62 @@ function fillSettingsForm() {
   updateCustomModeField();
   applyChoiceState(elements.toneControl, "tone", state.formDraft.tone);
   applyChoiceState(elements.lengthControl, "length", state.formDraft.replyLength);
+  renderMemoryList();
+}
+
+function memoryItems(value) {
+  return String(value || "")
+    .split(/\n+/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function renderMemoryList() {
+  const items = memoryItems(state.formDraft?.memory ?? state.settings.memory);
+  elements.memoryList.replaceChildren();
+  elements.memoryEmpty.classList.toggle("is-hidden", items.length > 0);
+
+  items.forEach((memory, index) => {
+    const item = document.createElement("article");
+    const copy = document.createElement("p");
+    const remove = document.createElement("button");
+    item.className = "memory-item";
+    copy.textContent = memory;
+    remove.className = "memory-delete";
+    remove.type = "button";
+    remove.textContent = "×";
+    remove.setAttribute("aria-label", translate("removeMemory", { memory }));
+    remove.addEventListener("click", () => removeMemoryDraft(index));
+    item.append(copy, remove);
+    elements.memoryList.append(item);
+  });
+}
+
+function addMemoryDraft() {
+  if (!state.formDraft) return;
+  const memory = elements.memoryAddInput.value.trim();
+  if (!memory) return;
+  const items = memoryItems(state.formDraft.memory);
+  if (items.some((item) => item.toLocaleLowerCase() === memory.toLocaleLowerCase())) {
+    elements.memoryAddInput.value = "";
+    return;
+  }
+  const combined = [...items, memory].join("\n");
+  if (combined.length > 500) {
+    showToast(translate("memoryFull"));
+    return;
+  }
+  state.formDraft.memory = combined;
+  elements.memoryAddInput.value = "";
+  renderMemoryList();
+}
+
+function removeMemoryDraft(index) {
+  if (!state.formDraft) return;
+  const items = memoryItems(state.formDraft.memory);
+  items.splice(index, 1);
+  state.formDraft.memory = items.join("\n");
+  renderMemoryList();
 }
 
 function updateCustomModeField() {
@@ -604,18 +699,47 @@ function showDialog(dialog) {
   window.requestAnimationFrame(focusHeading);
 }
 
-function openAccount() {
-  renderAccount();
-  showDialog(elements.accountDialog);
+function selectSettingsTab(name) {
+  const selected = Array.from(elements.settingsTabButtons).find((button) => button.dataset.settingsTab === name);
+  if (!selected) return;
+  state.settingsTab = name;
+  for (const button of elements.settingsTabButtons) {
+    const active = button === selected;
+    button.setAttribute("aria-selected", String(active));
+    button.tabIndex = active ? 0 : -1;
+  }
+  for (const panel of elements.settingsPanels) {
+    panel.classList.toggle("is-hidden", panel.dataset.settingsPanel !== name);
+  }
+  selected.scrollIntoView({ block: "nearest", inline: "nearest" });
+  if (name === "memory") renderMemoryList();
+  if (name === "history") void loadHistory();
 }
 
-function openSettings() {
+function openSettings(tabName = "general") {
   fillSettingsForm();
+  renderAccount();
   showDialog(elements.settingsDialog);
+  selectSettingsTab(tabName);
 }
 
-function closeAccount() {
-  if (elements.accountDialog.open) elements.accountDialog.close();
+function handleSettingsTabClick(event) {
+  const button = event.target.closest("[data-settings-tab]");
+  if (button) selectSettingsTab(button.dataset.settingsTab);
+}
+
+function handleSettingsTabKeydown(event) {
+  if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+  event.preventDefault();
+  const tabs = Array.from(elements.settingsTabButtons);
+  const current = Math.max(0, tabs.indexOf(event.target));
+  const next = event.key === "Home"
+    ? 0
+    : event.key === "End"
+      ? tabs.length - 1
+      : (current + (event.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length;
+  selectSettingsTab(tabs[next].dataset.settingsTab);
+  tabs[next].focus({ preventScroll: true });
 }
 
 function closeSettings() {
@@ -628,7 +752,7 @@ async function saveSettings(event) {
     ...state.formDraft,
     displayName: elements.displayNameInput.value,
     aiName: elements.aiNameInput.value,
-    memory: elements.memoryInput.value,
+    memory: state.formDraft.memory,
     conversationMode: elements.modeSelect.value,
     customModePrompt: elements.customModeInput.value,
     sendDelay: elements.sendDelaySelect.value,
@@ -728,7 +852,6 @@ function renderAccount() {
     const metadataName = state.authUser.user_metadata?.full_name || state.authUser.user_metadata?.name;
     const label = state.settings.displayName || metadataName || state.authUser.email || "Account";
     elements.accountButton.textContent = String(label).split(/\s+/)[0].slice(0, 14);
-    elements.accountTitle.textContent = translate("accountPanelTitle");
     elements.accountName.textContent = String(metadataName || state.authUser.email || translate("googleAccount"));
     elements.accountStatus.textContent = translate(state.profileSchemaReady ? "syncOn" : "signedInNeedsSchema");
     elements.googleSignIn.classList.add("is-hidden");
@@ -737,7 +860,6 @@ function renderAccount() {
   }
 
   elements.accountButton.textContent = translate("accountTitle");
-  elements.accountTitle.textContent = translate("accountTitle");
   elements.accountName.textContent = translate("guest");
   elements.accountStatus.textContent = state.authConfigured
     ? translate("deviceOnly")
@@ -775,7 +897,6 @@ async function signOut() {
 }
 
 async function resetPersonalization() {
-  if (!window.confirm(translate("resetConfirm"))) return;
   state.settings = normalizeSettings({
     ...DEFAULT_SETTINGS,
     displayName: state.settings.displayName,
@@ -787,58 +908,92 @@ async function resetPersonalization() {
   storeSettings();
   applySettings();
   if (state.authUser && state.supabase) await saveCloudProfile();
+  fillSettingsForm();
+  selectSettingsTab("account");
   showToast(translate("personalizationReset"));
+  return true;
 }
 
 async function deleteAccount() {
-  if (!state.supabase || !state.authUser) return;
-  elements.confirmDeleteAccount.disabled = true;
-  elements.confirmDeleteAccount.setAttribute("aria-busy", "true");
+  if (!state.supabase || !state.authUser) return false;
   let error = null;
   try {
     ({ error } = await state.supabase.rpc("delete_current_user"));
   } catch {
     error = new Error("Account deletion request failed");
-  } finally {
-    elements.confirmDeleteAccount.disabled = false;
-    elements.confirmDeleteAccount.removeAttribute("aria-busy");
   }
   if (error) {
     showToast(translate("accountDeleteFailed"));
-    return;
+    return false;
   }
-  closeDeleteAccountConfirmation(false);
   await state.supabase.auth.signOut({ scope: "local" });
   state.authUser = null;
   state.loadedProfileFor = "";
   state.settings = { ...DEFAULT_SETTINGS };
   storeSettings();
   applySettings();
+  closeSettings();
   showToast(translate("accountDeleted"));
+  return true;
 }
 
-function openDeleteAccountConfirmation() {
+function openConfirmation({ titleKey, descriptionKey, confirmKey, action, eyebrowKey = "dangerZone" }) {
+  state.pendingConfirmation = { action };
+  elements.confirmEyebrow.textContent = translate(eyebrowKey);
+  elements.confirmEyebrow.classList.toggle("danger-text", eyebrowKey === "dangerZone");
+  elements.confirmTitle.textContent = translate(titleKey);
+  elements.confirmDescription.textContent = translate(descriptionKey);
+  elements.confirmAction.textContent = translate(confirmKey);
+  showDialog(elements.confirmDialog);
+}
+
+function closeConfirmation() {
+  if (elements.confirmDialog.open) elements.confirmDialog.close();
+  state.pendingConfirmation = null;
+}
+
+async function confirmPendingAction() {
+  const pending = state.pendingConfirmation;
+  if (!pending) return;
+  elements.confirmAction.disabled = true;
+  elements.confirmAction.setAttribute("aria-busy", "true");
+  let succeeded = false;
+  try {
+    succeeded = await pending.action();
+  } catch (error) {
+    showToast(error instanceof Error ? error.message : translate("responseUnavailable"));
+  } finally {
+    elements.confirmAction.disabled = false;
+    elements.confirmAction.removeAttribute("aria-busy");
+  }
+  if (succeeded) closeConfirmation();
+}
+
+function requestPersonalizationReset() {
+  openConfirmation({
+    titleKey: "resetConfirm",
+    descriptionKey: "resetDescription",
+    confirmKey: "resetPersonalization",
+    action: resetPersonalization,
+    eyebrowKey: "confirm"
+  });
+}
+
+function requestAccountDeletion() {
   if (!state.supabase || !state.authUser) return;
-  closeAccount();
-  showDialog(elements.deleteAccountDialog);
+  openConfirmation({
+    titleKey: "deleteAccountTitle",
+    descriptionKey: "deleteAccountDescription",
+    confirmKey: "deleteAccount",
+    action: deleteAccount
+  });
 }
 
-function closeDeleteAccountConfirmation(reopenAccount = true) {
-  if (elements.deleteAccountDialog.open) elements.deleteAccountDialog.close();
-  if (reopenAccount && state.authUser) openAccount();
-}
-
-function closeHistory() {
-  if (elements.historyDialog.open) elements.historyDialog.close();
-}
-
-async function openHistory() {
-  closeAccount();
+async function loadHistory() {
   elements.historyList.replaceChildren();
   elements.clearHistory.classList.add("is-hidden");
   elements.historyNote.classList.remove("is-hidden");
   elements.historyNote.textContent = translate(state.authUser ? "historyLoading" : "historySignIn");
-  showDialog(elements.historyDialog);
   if (!state.supabase || !state.authUser) return;
 
   const { data, error } = await state.supabase
@@ -896,7 +1051,7 @@ function renderHistory(records) {
     remove.type = "button";
     remove.textContent = "×";
     remove.setAttribute("aria-label", translate("deleteCallConfirm"));
-    remove.addEventListener("click", () => void deleteConversation(record.id, item));
+    remove.addEventListener("click", () => requestConversationDeletion(record.id, item));
     item.append(resume, remove);
     elements.historyList.append(item);
   }
@@ -904,29 +1059,50 @@ function renderHistory(records) {
 
 function resumeConversation(id, messages) {
   if (!messages.length) return;
-  closeHistory();
+  closeSettings();
   beginCall(messages, id);
 }
 
 async function deleteConversation(id, item) {
-  if (!state.supabase || !state.authUser || !window.confirm(translate("deleteCallConfirm"))) return;
+  if (!state.supabase || !state.authUser) return false;
   const { error } = await state.supabase.from("conversations").delete().eq("id", id);
   if (error) {
     showToast(error.message);
-    return;
+    return false;
   }
   item.remove();
   if (!elements.historyList.children.length) renderHistory([]);
+  return true;
 }
 
 async function clearHistory() {
-  if (!state.supabase || !state.authUser || !window.confirm(translate("clearHistoryConfirm"))) return;
+  if (!state.supabase || !state.authUser) return false;
   const { error } = await state.supabase.from("conversations").delete().eq("user_id", state.authUser.id);
   if (error) {
     showToast(error.message);
-    return;
+    return false;
   }
   renderHistory([]);
+  return true;
+}
+
+function requestConversationDeletion(id, item) {
+  openConfirmation({
+    titleKey: "deleteCallConfirm",
+    descriptionKey: "deleteCallDescription",
+    confirmKey: "deleteCall",
+    action: () => deleteConversation(id, item)
+  });
+}
+
+function requestHistoryClear() {
+  if (!state.supabase || !state.authUser) return;
+  openConfirmation({
+    titleKey: "clearHistoryConfirm",
+    descriptionKey: "clearHistoryDescription",
+    confirmKey: "clearHistory",
+    action: clearHistory
+  });
 }
 
 async function loadCloudProfile() {
@@ -1496,23 +1672,28 @@ function updateViewportHeight() {
   document.documentElement.style.setProperty("--app-height", `${Math.round(height)}px`);
 }
 
-elements.accountButton.addEventListener("click", openAccount);
-elements.closeAccount.addEventListener("click", closeAccount);
+elements.accountButton.addEventListener("click", () => openSettings("account"));
 elements.settingsButton.addEventListener("click", openSettings);
 elements.closeSettings.addEventListener("click", closeSettings);
 elements.settingsForm.addEventListener("submit", saveSettings);
+elements.settingsTabs.addEventListener("click", handleSettingsTabClick);
+elements.settingsTabs.addEventListener("keydown", handleSettingsTabKeydown);
+elements.addMemory.addEventListener("click", addMemoryDraft);
+elements.memoryAddInput.addEventListener("keydown", (event) => {
+  if (event.key !== "Enter") return;
+  event.preventDefault();
+  addMemoryDraft();
+});
 elements.googleSignIn.addEventListener("click", signInWithGoogle);
 elements.signOut.addEventListener("click", signOut);
-elements.openHistory.addEventListener("click", openHistory);
-elements.closeHistory.addEventListener("click", closeHistory);
-elements.clearHistory.addEventListener("click", clearHistory);
-elements.resetPersonalization.addEventListener("click", resetPersonalization);
-elements.deleteAccount.addEventListener("click", openDeleteAccountConfirmation);
-elements.cancelDeleteAccount.addEventListener("click", () => closeDeleteAccountConfirmation());
-elements.confirmDeleteAccount.addEventListener("click", deleteAccount);
-elements.deleteAccountDialog.addEventListener("cancel", (event) => {
+elements.clearHistory.addEventListener("click", requestHistoryClear);
+elements.resetPersonalization.addEventListener("click", requestPersonalizationReset);
+elements.deleteAccount.addEventListener("click", requestAccountDeletion);
+elements.cancelConfirm.addEventListener("click", () => closeConfirmation());
+elements.confirmAction.addEventListener("click", confirmPendingAction);
+elements.confirmDialog.addEventListener("cancel", (event) => {
   event.preventDefault();
-  closeDeleteAccountConfirmation();
+  closeConfirmation();
 });
 elements.toneControl.addEventListener("click", (event) => selectChoice(event, "tone"));
 elements.lengthControl.addEventListener("click", (event) => selectChoice(event, "length"));

@@ -496,6 +496,38 @@ button:disabled { cursor: default; opacity: 0.45; }
 .dialog-header .eyebrow { margin-bottom: 4px; }
 .dialog-header h2 { margin: 0; font-size: 28px; letter-spacing: -0.05em; }
 
+.settings-dialog { max-width: 500px; }
+.settings-form { gap: 16px; }
+.settings-tabs {
+  display: flex;
+  gap: 5px;
+  margin: 0 -20px;
+  padding: 0 20px 9px;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--line);
+  scrollbar-width: none;
+}
+.settings-tabs::-webkit-scrollbar { display: none; }
+.settings-tabs button {
+  flex: 0 0 auto;
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 760;
+}
+.settings-tabs button[aria-selected="true"] { background: var(--ink); color: var(--surface); }
+.settings-panels { min-height: 260px; }
+.settings-panel { display: grid; gap: 18px; }
+.section-heading { display: grid; gap: 5px; }
+.section-heading h3,
+.section-heading p { margin: 0; }
+.section-heading h3 { font-size: 16px; letter-spacing: -0.025em; }
+.section-heading p { color: var(--muted); font-size: 10px; line-height: 1.5; }
+.panel-note { color: var(--muted); font-size: 9px; line-height: 1.5; }
+
 .confirm-dialog { max-width: 390px; }
 .confirm-form { gap: 18px; }
 .confirm-header { display: grid; gap: 5px; }
@@ -507,8 +539,6 @@ button:disabled { cursor: default; opacity: 0.45; }
 .confirm-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .confirm-actions button { min-height: 50px; }
 
-.account-dialog { max-width: 420px; }
-.account-form { gap: 18px; }
 .dialog-note { margin: 0; color: var(--muted); font-size: 10px; line-height: 1.5; }
 
 .account-card {
@@ -522,7 +552,7 @@ button:disabled { cursor: default; opacity: 0.45; }
 .account-card > div:not(.account-actions) { display: flex; flex-direction: column; gap: 3px; }
 .account-card strong { font-size: 13px; }
 .account-card span { color: var(--muted); font-size: 10px; }
-.account-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.account-actions { display: grid; gap: 8px; }
 .account-actions .text-button { justify-self: stretch; }
 
 .google-button { gap: 10px; min-height: 46px; background: var(--raised); color: var(--ink); }
@@ -595,9 +625,21 @@ button:disabled { cursor: default; opacity: 0.45; }
 .compact-button { min-height: 38px; padding: 8px 11px; border-radius: 11px; font-size: 10px; }
 .danger-text { color: var(--danger); }
 
-.history-dialog { max-width: 440px; }
-.history-form { gap: 15px; }
+.memory-list,
 .history-list { display: grid; gap: 8px; }
+
+.memory-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 13px;
+  border-radius: 14px;
+  background: var(--soft);
+}
+.memory-item p { margin: 0; overflow-wrap: anywhere; font-size: 11px; line-height: 1.5; }
+.memory-delete,
+.history-delete { width: 34px; height: 34px; border-radius: 50%; background: var(--raised); color: var(--muted); font-size: 17px; }
 
 .history-item {
   display: grid;
@@ -614,7 +656,6 @@ button:disabled { cursor: default; opacity: 0.45; }
 .history-main span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .history-main strong { font-size: 12px; }
 .history-main span { margin-top: 4px; color: var(--muted); font-size: 9px; }
-.history-delete { width: 34px; height: 34px; border-radius: 50%; background: var(--raised); color: var(--muted); font-size: 17px; }
 
 .toast {
   position: fixed;

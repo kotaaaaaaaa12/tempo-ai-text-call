@@ -13,8 +13,8 @@
     <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
     <link rel="manifest" href="/manifest.webmanifest">
-    <link rel="stylesheet" href="/assets/css/app.css?v=10">
-    <script type="module" src="/assets/js/app.js?v=10"></script>
+    <link rel="stylesheet" href="/assets/css/app.css?v=11">
+    <script type="module" src="/assets/js/app.js?v=11"></script>
   </head>
   <body>
     <main class="app-shell" id="app">
@@ -93,142 +93,134 @@
       </section>
     </main>
 
-    <dialog class="app-dialog account-dialog" id="account-dialog" aria-labelledby="account-title">
-      <div class="dialog-form account-form">
-        <header class="dialog-header">
-          <div><p class="eyebrow" data-i18n="accountEyebrow">Account</p><h2 id="account-title" data-dialog-focus tabindex="-1" data-i18n="accountTitle">Sign in</h2></div>
-          <button class="icon-button" id="close-account" type="button" aria-label="Close account" data-i18n-aria-label="closeAccount">
-            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg>
-          </button>
-        </header>
-        <section class="account-card">
-          <div><strong id="account-name">Guest</strong><span id="account-status">Settings stay on this device</span></div>
-          <button class="google-button" id="google-sign-in" type="button"><b>G</b><span data-i18n="continueGoogle">Continue with Google</span></button>
-          <div class="account-actions is-hidden" id="account-actions">
-            <button class="secondary-button compact-button" id="open-history" type="button" data-i18n="history">History</button>
-            <button class="secondary-button compact-button" id="reset-personalization" type="button" data-i18n="resetPersonalization">Reset personalization</button>
-            <button class="text-button" id="sign-out" type="button" data-i18n="signOut">Sign out</button>
-            <button class="text-button danger-text" id="delete-account" type="button" data-i18n="deleteAccount">Delete account</button>
-          </div>
-        </section>
-        <p class="dialog-note" data-i18n="accountNote">Sign in to sync personalization between devices.</p>
-      </div>
-    </dialog>
-
     <dialog class="app-dialog settings-dialog" id="settings-dialog" aria-labelledby="settings-title">
       <form class="dialog-form settings-form" id="settings-form">
         <header class="dialog-header">
-          <div><p class="eyebrow" data-i18n="personalize">Personalize</p><h2 id="settings-title" data-dialog-focus tabindex="-1" data-i18n="settings">Settings</h2></div>
+          <div><p class="eyebrow">tempo</p><h2 id="settings-title" data-dialog-focus tabindex="-1" data-i18n="settings">Settings</h2></div>
           <button class="icon-button" id="close-settings" type="button" aria-label="Close settings" data-i18n-aria-label="closeSettings">
             <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg>
           </button>
         </header>
 
-        <label class="field"><span data-i18n="callYou">What should the AI call you?</span><input id="display-name-input" name="displayName" maxlength="40" autocomplete="nickname" placeholder="Your name" data-i18n-placeholder="yourName"></label>
-        <label class="field"><span data-i18n="aiName">AI name</span><input id="ai-name-input" name="aiName" maxlength="40" autocomplete="off" value="Nova"></label>
+        <nav class="settings-tabs" role="tablist" aria-label="Settings sections" data-i18n-aria-label="settingsSections">
+          <button id="settings-tab-general" type="button" role="tab" aria-controls="settings-panel-general" aria-selected="true" data-settings-tab="general" data-i18n="tabGeneral">General</button>
+          <button id="settings-tab-ai" type="button" role="tab" aria-controls="settings-panel-ai" aria-selected="false" tabindex="-1" data-settings-tab="ai" data-i18n="tabAI">AI</button>
+          <button id="settings-tab-memory" type="button" role="tab" aria-controls="settings-panel-memory" aria-selected="false" tabindex="-1" data-settings-tab="memory" data-i18n="tabMemory">Memory</button>
+          <button id="settings-tab-history" type="button" role="tab" aria-controls="settings-panel-history" aria-selected="false" tabindex="-1" data-settings-tab="history" data-i18n="tabHistory">History</button>
+          <button id="settings-tab-account" type="button" role="tab" aria-controls="settings-panel-account" aria-selected="false" tabindex="-1" data-settings-tab="account" data-i18n="tabAccount">Account</button>
+        </nav>
 
-        <fieldset class="choice-fieldset">
-          <legend data-i18n="tone">Tone</legend>
-          <div class="choice-row" id="tone-control">
-            <button type="button" data-tone="casual" aria-pressed="true" data-i18n="casual">Casual</button>
-            <button type="button" data-tone="thoughtful" aria-pressed="false" data-i18n="thoughtful">Thoughtful</button>
-            <button type="button" data-tone="direct" aria-pressed="false" data-i18n="direct">Direct</button>
-          </div>
-        </fieldset>
+        <div class="settings-panels">
+          <section class="settings-panel" id="settings-panel-general" role="tabpanel" aria-labelledby="settings-tab-general" data-settings-panel="general">
+            <label class="theme-row">
+              <span data-i18n="language">Language</span>
+              <select id="language-select" name="language"><option value="auto">Auto</option><option value="en">English</option><option value="ja">日本語</option></select>
+            </label>
+            <label class="theme-row">
+              <span data-i18n="appearance">Appearance</span>
+              <select id="theme-select" name="theme"><option value="auto" data-i18n="auto">Auto</option><option value="light" data-i18n="light">Light</option><option value="dark" data-i18n="dark">Dark</option></select>
+            </label>
+            <label class="field">
+              <span data-i18n="sendTiming">Send timing</span>
+              <select id="send-delay-select" name="sendDelay">
+                <option value="fast" data-i18n="sendFast">Fast · 0.9 sec</option>
+                <option value="normal" data-i18n="sendNormal">Normal · 1.5 sec</option>
+                <option value="slow" data-i18n="sendSlow">Slow · 2.5 sec</option>
+                <option value="manual" data-i18n="sendManual">Manual · Enter</option>
+              </select>
+            </label>
+            <section class="pwa-card">
+              <div><strong data-i18n="appInstall">App install</strong><span data-i18n="appInstallNote">Add tempo to your home screen and keep its app shell available offline.</span></div>
+              <div class="pwa-actions">
+                <button class="secondary-button compact-button" id="install-app" type="button" data-i18n="installApp">Add to Home Screen</button>
+                <button class="secondary-button compact-button is-hidden" id="update-app" type="button" data-i18n="updateApp">Update app</button>
+              </div>
+            </section>
+          </section>
 
-        <label class="field">
-          <span data-i18n="conversationMode">Conversation mode</span>
-          <select id="mode-select" name="conversationMode">
-            <option value="general" data-i18n="modeGeneral">General</option>
-            <option value="study" data-i18n="modeStudy">Study</option>
-            <option value="english" data-i18n="modeEnglish">English practice</option>
-            <option value="brainstorm" data-i18n="modeBrainstorm">Brainstorm</option>
-            <option value="advice" data-i18n="modeAdvice">Advice</option>
-            <option value="custom" data-i18n="modeCustom">Custom</option>
-          </select>
-        </label>
+          <section class="settings-panel is-hidden" id="settings-panel-ai" role="tabpanel" aria-labelledby="settings-tab-ai" data-settings-panel="ai">
+            <label class="field"><span data-i18n="callYou">What should the AI call you?</span><input id="display-name-input" name="displayName" maxlength="40" autocomplete="nickname" placeholder="Your name" data-i18n-placeholder="yourName"></label>
+            <label class="field"><span data-i18n="aiName">AI name</span><input id="ai-name-input" name="aiName" maxlength="40" autocomplete="off" value="Nova"></label>
+            <fieldset class="choice-fieldset">
+              <legend data-i18n="tone">Tone</legend>
+              <div class="choice-row" id="tone-control">
+                <button type="button" data-tone="casual" aria-pressed="true" data-i18n="casual">Casual</button>
+                <button type="button" data-tone="thoughtful" aria-pressed="false" data-i18n="thoughtful">Thoughtful</button>
+                <button type="button" data-tone="direct" aria-pressed="false" data-i18n="direct">Direct</button>
+              </div>
+            </fieldset>
+            <label class="field">
+              <span data-i18n="conversationMode">Conversation mode</span>
+              <select id="mode-select" name="conversationMode">
+                <option value="general" data-i18n="modeGeneral">General</option>
+                <option value="study" data-i18n="modeStudy">Study</option>
+                <option value="english" data-i18n="modeEnglish">English practice</option>
+                <option value="brainstorm" data-i18n="modeBrainstorm">Brainstorm</option>
+                <option value="advice" data-i18n="modeAdvice">Advice</option>
+                <option value="custom" data-i18n="modeCustom">Custom</option>
+              </select>
+            </label>
+            <label class="field is-hidden" id="custom-mode-field">
+              <span data-i18n="customInstructions">Custom mode instructions</span>
+              <textarea id="custom-mode-input" name="customModePrompt" rows="3" maxlength="500" placeholder="How should this mode work?" data-i18n-placeholder="customInstructionsPlaceholder"></textarea>
+            </label>
+            <fieldset class="choice-fieldset">
+              <legend data-i18n="replyLength">Reply length</legend>
+              <div class="choice-row" id="length-control">
+                <button type="button" data-length="short" aria-pressed="true" data-i18n="short">Short</button>
+                <button type="button" data-length="balanced" aria-pressed="false" data-i18n="balanced">Balanced</button>
+                <button type="button" data-length="detailed" aria-pressed="false" data-i18n="detailed">Detailed</button>
+              </div>
+            </fieldset>
+          </section>
 
-        <label class="field is-hidden" id="custom-mode-field">
-          <span data-i18n="customInstructions">Custom mode instructions</span>
-          <textarea id="custom-mode-input" name="customModePrompt" rows="3" maxlength="500" placeholder="How should this mode work?" data-i18n-placeholder="customInstructionsPlaceholder"></textarea>
-        </label>
+          <section class="settings-panel is-hidden" id="settings-panel-memory" role="tabpanel" aria-labelledby="settings-tab-memory" data-settings-panel="memory">
+            <div class="section-heading"><h3 data-i18n="savedMemories">Saved memories</h3><p data-i18n="memoryDescription">Details the AI can use in future calls.</p></div>
+            <p class="dialog-note" id="memory-empty" data-i18n="memoryEmpty">Nothing saved yet.</p>
+            <div class="memory-list" id="memory-list"></div>
+            <label class="field"><span data-i18n="addMemory">Add a memory</span><input id="memory-add-input" maxlength="280" autocomplete="off" placeholder="Interests, goals, preferences…" data-i18n-placeholder="memoryPlaceholder"></label>
+            <button class="secondary-button compact-button" id="add-memory" type="button" data-i18n="add">Add</button>
+            <small class="panel-note" data-i18n="memoryNote">Changes are applied when you save settings. Conversation transcripts are never included.</small>
+          </section>
 
-        <label class="field">
-          <span data-i18n="sendTiming">Send timing</span>
-          <select id="send-delay-select" name="sendDelay">
-            <option value="fast" data-i18n="sendFast">Fast · 0.9 sec</option>
-            <option value="normal" data-i18n="sendNormal">Normal · 1.5 sec</option>
-            <option value="slow" data-i18n="sendSlow">Slow · 2.5 sec</option>
-            <option value="manual" data-i18n="sendManual">Manual · Enter</option>
-          </select>
-        </label>
+          <section class="settings-panel is-hidden" id="settings-panel-history" role="tabpanel" aria-labelledby="settings-tab-history" data-settings-panel="history">
+            <label class="toggle-row">
+              <span><b data-i18n="saveHistory">Save conversation history</b><small data-i18n="historyOffNote">Off by default. Saved only to your signed-in account.</small></span>
+              <input id="save-history-input" name="saveHistory" type="checkbox">
+            </label>
+            <p class="dialog-note" id="history-note" data-i18n="historyEmpty">No saved calls yet.</p>
+            <div class="history-list" id="history-list"></div>
+            <button class="text-button danger-text is-hidden" id="clear-history" type="button" data-i18n="clearHistory">Clear all history</button>
+          </section>
 
-        <fieldset class="choice-fieldset">
-          <legend data-i18n="replyLength">Reply length</legend>
-          <div class="choice-row" id="length-control">
-            <button type="button" data-length="short" aria-pressed="true" data-i18n="short">Short</button>
-            <button type="button" data-length="balanced" aria-pressed="false" data-i18n="balanced">Balanced</button>
-            <button type="button" data-length="detailed" aria-pressed="false" data-i18n="detailed">Detailed</button>
-          </div>
-        </fieldset>
-
-        <label class="field">
-          <span data-i18n="remember">Things to remember</span>
-          <textarea id="memory-input" name="memory" rows="4" maxlength="500" placeholder="Interests, goals, preferences…" data-i18n-placeholder="memoryPlaceholder"></textarea>
-          <small data-i18n="memoryNote">Only saved when you choose Save. Conversation transcripts are never included.</small>
-        </label>
-
-        <label class="theme-row">
-          <span data-i18n="language">Language</span>
-          <select id="language-select" name="language"><option value="auto">Auto</option><option value="en">English</option><option value="ja">日本語</option></select>
-        </label>
-
-        <label class="theme-row">
-          <span data-i18n="appearance">Appearance</span>
-          <select id="theme-select" name="theme"><option value="auto" data-i18n="auto">Auto</option><option value="light" data-i18n="light">Light</option><option value="dark" data-i18n="dark">Dark</option></select>
-        </label>
-
-        <label class="toggle-row">
-          <span><b data-i18n="saveHistory">Save conversation history</b><small data-i18n="historyOffNote">Off by default. Saved only to your signed-in account.</small></span>
-          <input id="save-history-input" name="saveHistory" type="checkbox">
-        </label>
-
-        <section class="pwa-card">
-          <div><strong data-i18n="appInstall">App install</strong><span data-i18n="appInstallNote">Add tempo to your home screen and keep its app shell available offline.</span></div>
-          <div class="pwa-actions">
-            <button class="secondary-button compact-button" id="install-app" type="button" data-i18n="installApp">Add to Home Screen</button>
-            <button class="secondary-button compact-button is-hidden" id="update-app" type="button" data-i18n="updateApp">Update app</button>
-          </div>
-        </section>
+          <section class="settings-panel is-hidden" id="settings-panel-account" role="tabpanel" aria-labelledby="settings-tab-account" data-settings-panel="account">
+            <section class="account-card">
+              <div><strong id="account-name">Guest</strong><span id="account-status">Settings stay on this device</span></div>
+              <button class="google-button" id="google-sign-in" type="button"><b>G</b><span data-i18n="continueGoogle">Continue with Google</span></button>
+              <div class="account-actions is-hidden" id="account-actions">
+                <button class="secondary-button compact-button" id="reset-personalization" type="button" data-i18n="resetPersonalization">Reset personalization</button>
+                <button class="text-button" id="sign-out" type="button" data-i18n="signOut">Sign out</button>
+                <button class="text-button danger-text" id="delete-account" type="button" data-i18n="deleteAccount">Delete account</button>
+              </div>
+            </section>
+            <p class="dialog-note" data-i18n="accountNote">Sign in to sync personalization between devices.</p>
+          </section>
+        </div>
 
         <button class="primary-button" id="save-settings" type="submit" data-i18n="saveSettings">Save settings</button>
       </form>
     </dialog>
 
-    <dialog class="app-dialog history-dialog" id="history-dialog" aria-labelledby="history-title">
-      <div class="dialog-form history-form">
-        <header class="dialog-header">
-          <div><p class="eyebrow" data-i18n="yourCalls">Your calls</p><h2 id="history-title" data-dialog-focus tabindex="-1" data-i18n="history">History</h2></div>
-          <button class="icon-button" id="close-history" type="button" aria-label="Close history" data-i18n-aria-label="closeHistory">
-            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg>
-          </button>
-        </header>
-        <p class="dialog-note" id="history-note" data-i18n="historyEmpty">No saved calls yet.</p>
-        <div class="history-list" id="history-list"></div>
-        <button class="text-button danger-text is-hidden" id="clear-history" type="button" data-i18n="clearHistory">Clear all history</button>
-      </div>
-    </dialog>
-
-    <dialog class="app-dialog confirm-dialog" id="delete-account-dialog" aria-labelledby="delete-account-title" aria-describedby="delete-account-description">
+    <dialog class="app-dialog confirm-dialog" id="confirm-dialog" aria-labelledby="confirm-title" aria-describedby="confirm-description">
       <div class="dialog-form confirm-form">
         <header class="confirm-header">
-          <p class="eyebrow danger-text" data-i18n="dangerZone">Danger zone</p>
-          <h2 id="delete-account-title" data-dialog-focus tabindex="-1" data-i18n="deleteAccountTitle">Delete account?</h2>
+          <p class="eyebrow danger-text" id="confirm-eyebrow">Danger zone</p>
+          <h2 id="confirm-title" data-dialog-focus tabindex="-1">Are you sure?</h2>
         </header>
-        <p class="confirm-copy" id="delete-account-description" data-i18n="deleteAccountDescription">Your settings and saved calls will be permanently deleted. This cannot be undone.</p>
+        <p class="confirm-copy" id="confirm-description">This action cannot be undone.</p>
         <div class="confirm-actions">
-          <button class="secondary-button" id="cancel-delete-account" type="button" data-i18n="cancel">Cancel</button>
-          <button class="danger-button" id="confirm-delete-account" type="button" data-i18n="deleteAccount">Delete account</button>
+          <button class="secondary-button" id="cancel-confirm" type="button" data-i18n="cancel">Cancel</button>
+          <button class="danger-button" id="confirm-action" type="button">Continue</button>
         </div>
       </div>
     </dialog>

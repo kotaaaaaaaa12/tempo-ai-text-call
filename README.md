@@ -39,8 +39,10 @@ Keep `public/assets/js/app.js` committed for direct Worker deploys, but edit `sr
 - Guest settings stored only on the device
 - Signed-in settings synchronized between devices
 - Explicit memory approval: suggested details are remembered only after the user taps the action
+- One settings hub with General, AI, Memory, History, and Account tabs
+- Saved memories shown as individual entries that can be added or removed
 - Optional signed-in conversation history, disabled by default
-- History resume/delete, personalization reset, and modal-confirmed permanent account deletion
+- History resume/delete, personalization reset, and permanent account deletion with reusable confirmation modals
 - Safari-friendly modal focus that opens on a non-interactive heading instead of a close button
 - Installable PWA shell with offline launch and an in-app update action
 - Row Level Security so each account can access only its own profile and conversations
