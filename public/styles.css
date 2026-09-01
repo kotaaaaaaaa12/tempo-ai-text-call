@@ -440,6 +440,8 @@ button:disabled { cursor: default; opacity: 0.45; }
   box-shadow: 0 28px 90px rgba(0, 0, 0, 0.28);
 }
 
+.settings-dialog:focus { outline: none; }
+
 .settings-dialog::backdrop { background: rgba(0, 0, 0, 0.46); backdrop-filter: blur(3px); }
 
 .settings-form {
@@ -532,6 +534,11 @@ button:disabled { cursor: default; opacity: 0.45; }
   .start-content { justify-content: flex-start; padding-top: 26px; overflow-y: auto; }
   .presence-mark { width: 42px; height: 42px; margin-bottom: 22px; border-radius: 13px; }
   .lede { margin: 12px 0 22px; }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  button:focus,
+  summary:focus { outline: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -65,6 +65,8 @@ Copy the Project URL and publishable key from the Supabase project settings. In 
 
 These two values are public browser configuration, not private server secrets. Keep `OPENAI_API_KEY` as an encrypted secret. Redeploy after adding the values.
 
+After redeploying, open `/api/health` on the deployed domain. `authReady` must be `true`. If it is `false`, open `/api/config`; its `missing` list shows the exact runtime variable name Cloudflare did not provide.
+
 The older Supabase anonymous key also works under `SUPABASE_ANON_KEY`, but the publishable key is preferred.
 
 ## Checks

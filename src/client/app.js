@@ -79,7 +79,9 @@ const state = {
   supabase: null,
   authUser: null,
   loadedProfileFor: "",
-  authConfigured: false
+  authConfigured: false,
+  authInitializing: false,
+  authProblem: ""
 };
 
 function readPreference(key, fallback) {
@@ -198,7 +200,11 @@ function selectChoice(event, key) {
 function openSettings() {
   fillSettingsForm();
   renderAccount();
-  if (!elements.settingsDialog.open) elements.settingsDialog.showModal();
+  if (!elements.settingsDialog.open) {
+    elements.settingsDialog.showModal();
+    elements.settingsDialog.focus({ preventScroll: true });
+    window.requestAnimationFrame(() => elements.settingsDialog.focus({ preventScroll: true }));
+  }
 }
 
 function closeSettings() {
@@ -227,19 +233,25 @@ async function saveSettings(event) {
   closeSettings();
 }
 
-async function initAuth() {
-  elements.googleSignIn.disabled = true;
+async function initAuth(showProblem = false) {
+  if (state.supabase) return true;
+  if (state.authInitializing) return false;
+  state.authInitializing = true;
+  elements.googleSignIn.setAttribute("aria-busy", "true");
   try {
     const response = await fetch("/api/config", { cache: "no-store" });
     const config = await response.json();
     const auth = config?.auth;
     if (!response.ok || !auth?.ready || !auth.url || !auth.publishableKey) {
       state.authConfigured = false;
-      renderAccount();
-      return;
+      const missing = Array.isArray(auth?.missing) ? auth.missing.join(" and ") : "Supabase configuration";
+      state.authProblem = `Missing Cloudflare runtime variable: ${missing}`;
+      if (showProblem) showToast(state.authProblem);
+      return false;
     }
 
     state.authConfigured = true;
+    state.authProblem = "";
     state.supabase = createClient(auth.url, auth.publishableKey, {
       auth: {
         flowType: "pkce",
@@ -257,8 +269,18 @@ async function initAuth() {
     state.supabase.auth.onAuthStateChange((_event, session) => {
       window.setTimeout(() => void handleSession(session), 0);
     });
-  } catch {
+    return true;
+  } catch (error) {
     state.authConfigured = false;
+    state.authProblem = error instanceof Error
+      ? `Google sign-in setup error: ${error.message}`
+      : "Google sign-in setup could not be loaded";
+    if (showProblem) showToast(state.authProblem);
+    state.supabase = null;
+    return false;
+  } finally {
+    state.authInitializing = false;
+    elements.googleSignIn.removeAttribute("aria-busy");
     renderAccount();
   }
 }
@@ -301,16 +323,15 @@ function renderAccount() {
   elements.accountName.textContent = "Guest";
   elements.accountStatus.textContent = state.authConfigured
     ? "Settings stay on this device"
-    : "Google sign-in needs Supabase setup";
+    : state.authProblem || "Checking Google sign-in…";
   elements.googleSignIn.classList.remove("is-hidden");
-  elements.googleSignIn.disabled = !state.authConfigured;
   elements.signOut.classList.add("is-hidden");
 }
 
 async function signInWithGoogle() {
   if (!state.supabase) {
-    showToast("Add the Supabase URL and publishable key first");
-    return;
+    const ready = await initAuth(true);
+    if (!ready || !state.supabase) return;
   }
 
   const { error } = await state.supabase.auth.signInWithOAuth({

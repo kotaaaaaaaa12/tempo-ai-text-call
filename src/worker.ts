@@ -213,9 +213,14 @@ export default {
       const supabaseUrl = env.SUPABASE_URL?.trim() || "";
       const publishableKey = env.SUPABASE_PUBLISHABLE_KEY?.trim() || env.SUPABASE_ANON_KEY?.trim() || "";
       const ready = Boolean(supabaseUrl && publishableKey);
+      const missing = [
+        !supabaseUrl ? "SUPABASE_URL" : "",
+        !publishableKey ? "SUPABASE_PUBLISHABLE_KEY" : ""
+      ].filter(Boolean);
       return json({
         auth: {
           ready,
+          missing,
           url: ready ? supabaseUrl : null,
           publishableKey: ready ? publishableKey : null
         }

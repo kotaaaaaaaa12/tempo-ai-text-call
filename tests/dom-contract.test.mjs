@@ -23,3 +23,14 @@ test("the web app manifest is valid JSON", async () => {
   assert.equal(manifest.display, "standalone");
   assert.equal(manifest.start_url, "/");
 });
+
+test("Google sign-in remains actionable and the settings dialog can receive Safari focus", async () => {
+  const [html, app] = await Promise.all([
+    readFile(new URL("../public/index.html", import.meta.url), "utf8"),
+    readFile(new URL("../src/client/app.js", import.meta.url), "utf8")
+  ]);
+
+  assert.match(html, /<dialog[^>]+id="settings-dialog"[^>]+tabindex="-1"/);
+  assert.doesNotMatch(html, /id="google-sign-in"[^>]+disabled/);
+  assert.doesNotMatch(app, /googleSignIn\.disabled\s*=/);
+});
