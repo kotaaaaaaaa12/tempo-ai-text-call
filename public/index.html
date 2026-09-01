@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+    <meta name="theme-color" content="#f5f1e8" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#10100f" media="(prefers-color-scheme: dark)">
+    <meta name="description" content="A live AI text call that replies as you pause.">
+    <title>tempo — AI text calls</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="manifest" href="/manifest.webmanifest">
+    <link rel="stylesheet" href="/styles.css?v=4">
+    <script type="module" src="/app.js?v=4"></script>
+  </head>
+  <body>
+    <main class="app-shell" id="app">
+      <section class="screen start-screen is-active" id="start-screen" aria-labelledby="start-title">
+        <header class="start-header">
+          <a class="wordmark" href="/" aria-label="tempo home">tempo<span>.</span></a>
+          <button class="icon-button" id="theme-button" type="button" aria-label="Theme: auto" title="Change theme">
+            <svg aria-hidden="true" viewBox="0 0 24 24">
+              <path d="M12 3v2m0 14v2m9-9h-2M5 12H3m15.36-6.36-1.42 1.42M7.06 16.94l-1.42 1.42m12.72 0-1.42-1.42M7.06 7.06 5.64 5.64M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z"/>
+            </svg>
+          </button>
+        </header>
+
+        <div class="start-content">
+          <div class="avatar" aria-hidden="true">
+            <span>N</span>
+            <i></i>
+          </div>
+          <p class="eyebrow">AI text call</p>
+          <h1 id="start-title">Text that<br>talks back.</h1>
+          <p class="lede">Type naturally. Nova replies the moment you pause, with no send button in the way.</p>
+
+          <fieldset class="tone-fieldset">
+            <legend>Conversation tone</legend>
+            <div class="segmented-control" id="tone-control">
+              <button type="button" data-tone="casual" aria-pressed="true">Casual</button>
+              <button type="button" data-tone="thoughtful" aria-pressed="false">Thoughtful</button>
+              <button type="button" data-tone="direct" aria-pressed="false">Direct</button>
+            </div>
+          </fieldset>
+
+          <button class="call-button" id="start-call" type="button">
+            <span class="call-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M8.1 3.5 5.7 4.8c-.7.4-1.1 1.1-1 1.9.7 6 5.5 10.8 11.5 11.5.8.1 1.5-.3 1.9-1l1.3-2.4c.3-.6.2-1.3-.3-1.8l-2.2-1.8c-.5-.4-1.2-.4-1.7 0l-1.4 1.1a11 11 0 0 1-2.3-1.8 11 11 0 0 1-1.8-2.3l1.1-1.4c.4-.5.4-1.2 0-1.7L9.9 3.8c-.5-.5-1.2-.6-1.8-.3Z"/></svg>
+            </span>
+            <span>Start a text call</span>
+          </button>
+          <p class="privacy-note">This call stays in this tab and is cleared when you close it.</p>
+        </div>
+      </section>
+
+      <section class="screen call-screen" id="call-screen" aria-labelledby="call-title" inert>
+        <header class="call-header">
+          <div class="call-identity">
+            <div class="mini-avatar" aria-hidden="true">N</div>
+            <div>
+              <h2 id="call-title">Nova</h2>
+              <p><span class="presence-dot"></span><span id="connection-label">Connected</span></p>
+            </div>
+          </div>
+          <time id="call-timer" datetime="PT0S">00:00</time>
+          <button class="hangup-button" id="end-call" type="button" aria-label="End call">
+            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M6.2 14.2c3.8-2.9 7.8-2.9 11.6 0l1.5-1.5c.5-.5.6-1.3.1-1.8-4.1-4.4-10.7-4.4-14.8 0-.5.5-.4 1.3.1 1.8l1.5 1.5Zm2.3-.4v3.1m7-3.1v3.1"/></svg>
+          </button>
+        </header>
+
+        <div class="conversation-stage">
+          <section class="speaker-panel ai-panel" aria-labelledby="ai-label">
+            <p class="speaker-label" id="ai-label">Nova</p>
+            <div class="live-copy ai-copy" id="ai-copy">Hey — what’s on your mind?</div>
+          </section>
+
+          <div class="turn-status" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </div>
+          <p class="sr-status" id="sr-status" aria-live="polite">Ready</p>
+
+          <section class="speaker-panel user-panel" id="user-panel" aria-labelledby="user-label">
+            <div class="user-label-row">
+              <p class="speaker-label" id="user-label">You</p>
+              <span id="character-count">0 / 280</span>
+            </div>
+            <textarea
+              id="message-input"
+              rows="3"
+              maxlength="280"
+              enterkeyhint="send"
+              autocapitalize="sentences"
+              autocomplete="off"
+              spellcheck="true"
+              placeholder="Start typing…"
+              aria-label="Your message"
+            ></textarea>
+            <p class="send-hint" id="send-hint"><span></span>Updates after you pause</p>
+          </section>
+        </div>
+      </section>
+
+      <section class="screen end-screen" id="end-screen" aria-labelledby="end-title" inert>
+        <header class="end-header">
+          <span class="wordmark">tempo<span>.</span></span>
+        </header>
+        <div class="end-content">
+          <div class="ended-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="m7 12 3.2 3.2L17.5 8"/></svg>
+          </div>
+          <p class="eyebrow">Call complete</p>
+          <h1 id="end-title">Good talk.</h1>
+          <div class="call-stats">
+            <div><strong id="final-duration">00:00</strong><span>Duration</span></div>
+            <div><strong id="final-turns">0</strong><span>Turns</span></div>
+          </div>
+
+          <details class="transcript-details">
+            <summary>View transcript</summary>
+            <div class="transcript" id="transcript"></div>
+          </details>
+
+          <div class="end-actions">
+            <button class="primary-button" id="call-again" type="button">Call again</button>
+            <button class="secondary-button" id="copy-transcript" type="button">Copy transcript</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>
