@@ -61,7 +61,7 @@ const TRANSLATIONS = {
     duration: "Duration",
     turns: "Turns",
     transcript: "Transcript",
-    callAgain: "Call again",
+    backHome: "Back to home",
     copyTranscript: "Copy transcript",
     accountEyebrow: "Account",
     accountTitle: "Sign in",
@@ -239,7 +239,7 @@ const TRANSLATIONS = {
     duration: "通話時間",
     turns: "ターン数",
     transcript: "会話ログ",
-    callAgain: "もう一度話す",
+    backHome: "ホームに戻る",
     copyTranscript: "会話ログをコピー",
     accountEyebrow: "アカウント",
     accountTitle: "ログイン",
@@ -450,7 +450,7 @@ const elements = {
   privacyNote: document.querySelector("#privacy-note"),
   startCall: document.querySelector("#start-call"),
   endCall: document.querySelector("#end-call"),
-  callAgain: document.querySelector("#call-again"),
+  backHome: document.querySelector("#back-home"),
   copyTranscript: document.querySelector("#copy-transcript"),
   userPanel: document.querySelector("#user-panel"),
   assistantActions: document.querySelector("#assistant-actions"),
@@ -1077,6 +1077,19 @@ function openConfirmation({ titleKey, descriptionKey, confirmKey, action, eyebro
 function closeConfirmation() {
   if (elements.confirmDialog.open) elements.confirmDialog.close();
   state.pendingConfirmation = null;
+  settleFocusAfterConfirmation();
+}
+
+function settleFocusAfterConfirmation() {
+  const settle = () => {
+    if (elements.settingsDialog.open) {
+      elements.settingsDialog.querySelector("[data-dialog-focus]")?.focus({ preventScroll: true });
+      return;
+    }
+    if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+  };
+  queueMicrotask(settle);
+  window.requestAnimationFrame(settle);
 }
 
 async function confirmPendingAction() {
@@ -1397,7 +1410,7 @@ function endCall() {
   queueHistorySave();
 }
 
-function callAgain() {
+function backHome() {
   setScreen("start");
   window.setTimeout(() => elements.startCall.focus(), 100);
 }
@@ -1850,7 +1863,7 @@ elements.lengthControl.addEventListener("click", (event) => selectChoice(event, 
 elements.modeSelect.addEventListener("change", updateCustomModeField);
 elements.startCall.addEventListener("click", startCall);
 elements.endCall.addEventListener("click", endCall);
-elements.callAgain.addEventListener("click", callAgain);
+elements.backHome.addEventListener("click", backHome);
 elements.copyTranscript.addEventListener("click", copyTranscript);
 elements.userPanel.addEventListener("click", () => elements.messageInput.focus({ preventScroll: true }));
 elements.assistantActions.addEventListener("click", handleAssistantAction);

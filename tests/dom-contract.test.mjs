@@ -31,10 +31,10 @@ test("the application shell uses organized versioned asset paths", async () => {
     readFile(new URL("../public/index.html", import.meta.url), "utf8"),
     readFile(new URL("../public/sw.js", import.meta.url), "utf8")
   ]);
-  assert.match(html, /\/assets\/css\/app\.css\?v=17/);
-  assert.match(html, /\/assets\/js\/app\.js\?v=17/);
+  assert.match(html, /\/assets\/css\/app\.css\?v=19/);
+  assert.match(html, /\/assets\/js\/app\.js\?v=19/);
   assert.match(html, /\/assets\/icons\/favicon\.svg/);
-  assert.match(worker, /tempo-shell-v17/);
+  assert.match(worker, /tempo-shell-v19/);
   assert.doesNotMatch(worker, /"\/sse\.js"/);
 });
 
@@ -46,6 +46,18 @@ test("the hang-up control uses a filled handset icon", async () => {
   assert.match(html, /id="end-call"[\s\S]*?<svg[^>]*viewBox="0 0 24 24"[\s\S]*?<path d="M12 7C7\.44 7/);
   assert.match(css, /\.hangup-button svg\s*\{[^}]*fill:\s*currentColor/s);
   assert.doesNotMatch(css, /\.hangup-button svg\s*\{[^}]*fill:\s*none/s);
+});
+
+test("the call summary returns home instead of offering an immediate call again", async () => {
+  const [html, app] = await Promise.all([
+    readFile(new URL("../public/index.html", import.meta.url), "utf8"),
+    readFile(new URL("../src/client/app.js", import.meta.url), "utf8")
+  ]);
+  assert.match(html, /id="back-home"[^>]+data-i18n="backHome">Back to home<\/button>/);
+  assert.doesNotMatch(html, /id="call-again"|data-i18n="callAgain"/);
+  assert.match(app, /function backHome\(\)\s*\{\s*setScreen\("start"\)/);
+  assert.match(app, /backHome: "ホームに戻る"/);
+  assert.match(app, /elements\.backHome\.addEventListener\("click", backHome\)/);
 });
 
 test("new controls include central actions, tabbed settings, memory, history, and PWA update UI", async () => {
@@ -71,9 +83,10 @@ test("new controls include central actions, tabbed settings, memory, history, an
 });
 
 test("Google sign-in remains actionable and dialogs focus passive headings on Safari", async () => {
-  const [html, app] = await Promise.all([
+  const [html, app, css] = await Promise.all([
     readFile(new URL("../public/index.html", import.meta.url), "utf8"),
-    readFile(new URL("../src/client/app.js", import.meta.url), "utf8")
+    readFile(new URL("../src/client/app.js", import.meta.url), "utf8"),
+    readFile(new URL("../public/assets/css/app.css", import.meta.url), "utf8")
   ]);
 
   for (const titleId of ["settings-title", "confirm-title"]) {
@@ -82,6 +95,11 @@ test("Google sign-in remains actionable and dialogs focus passive headings on Sa
   assert.doesNotMatch(html, /<dialog[^>]+tabindex=/);
   assert.match(app, /dialog\.querySelector\("\[data-dialog-focus\]"\)/);
   assert.doesNotMatch(app, /dialog\.focus\(/);
+  assert.match(app, /function settleFocusAfterConfirmation\(\)/);
+  assert.match(app, /settingsDialog\.querySelector\("\[data-dialog-focus\]"\)\?\.focus\(\{ preventScroll: true \}\)/);
+  assert.match(app, /queueMicrotask\(settle\)/);
+  assert.match(app, /requestAnimationFrame\(settle\)/);
+  assert.match(css, /\.app-dialog:focus,[\s\S]*?\.app-dialog:focus-visible\s*\{\s*outline:\s*none/);
   assert.doesNotMatch(html, /id="google-sign-in"[^>]+disabled/);
   assert.doesNotMatch(app, /googleSignIn\.disabled\s*=/);
 });
