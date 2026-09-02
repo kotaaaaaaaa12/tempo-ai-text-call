@@ -31,10 +31,10 @@ test("the application shell uses organized versioned asset paths", async () => {
     readFile(new URL("../public/index.html", import.meta.url), "utf8"),
     readFile(new URL("../public/sw.js", import.meta.url), "utf8")
   ]);
-  assert.match(html, /\/assets\/css\/app\.css\?v=16/);
-  assert.match(html, /\/assets\/js\/app\.js\?v=16/);
+  assert.match(html, /\/assets\/css\/app\.css\?v=17/);
+  assert.match(html, /\/assets\/js\/app\.js\?v=17/);
   assert.match(html, /\/assets\/icons\/favicon\.svg/);
-  assert.match(worker, /tempo-shell-v16/);
+  assert.match(worker, /tempo-shell-v17/);
   assert.doesNotMatch(worker, /"\/sse\.js"/);
 });
 
@@ -113,10 +113,19 @@ test("closing edited settings opens the reusable unsaved-changes dialog", async 
 });
 
 test("saving settings keeps the dialog open and resets the dirty snapshot", async () => {
-  const app = await readFile(new URL("../src/client/app.js", import.meta.url), "utf8");
+  const [html, app, css] = await Promise.all([
+    readFile(new URL("../public/index.html", import.meta.url), "utf8"),
+    readFile(new URL("../src/client/app.js", import.meta.url), "utf8"),
+    readFile(new URL("../public/assets/css/app.css", import.meta.url), "utf8")
+  ]);
   const saveFunction = app.match(/async function saveSettings\(event\) \{([\s\S]*?)\n\}/)?.[1] || "";
   assert.match(saveFunction, /state\.formDraft = \{ \.\.\.state\.settings \}/);
+  assert.match(saveFunction, /showSettingsSaveStatus/);
   assert.doesNotMatch(saveFunction, /closeSettings/);
+  assert.ok(html.indexOf('id="settings-save-status"') < html.indexOf('id="save-settings"'));
+  assert.match(html, /id="settings-save-status"[^>]+role="status"[^>]+aria-live="polite"/);
+  assert.match(css, /\.settings-save-status\.is-visible/);
+  assert.match(app, /settingsForm\.addEventListener\("input", clearSettingsSaveStatus\)/);
 });
 
 test("settings tabs fit without horizontal scrolling and only the panel scrolls", async () => {
@@ -146,6 +155,8 @@ test("appearance settings provide accents, text sizing, and motion without a den
   assert.match(app, /dataset\.motion = state\.settings\.motion/);
   assert.match(css, /:root\[data-accent="blue"\]/);
   assert.match(css, /:root\[data-font-size="large"\]/);
+  assert.match(css, /:root\[data-font-size="small"\]\s*\{\s*font-size:\s*0\.875rem/);
+  assert.match(css, /:root\[data-font-size="large"\]\s*\{\s*font-size:\s*1\.1875rem/);
   assert.match(css, /:root\[data-motion="none"\]/);
   assert.match(css, /font-size:\s*max\(1rem, 16px\)/);
 });

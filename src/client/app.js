@@ -122,6 +122,7 @@ const TRANSLATIONS = {
     light: "Light",
     dark: "Dark",
     saveSettings: "Save settings",
+    settingsSaved: "Settings saved",
     unsavedChangesTitle: "Discard unsaved changes?",
     unsavedChangesDescription: "Your settings changes have not been saved.",
     keepEditing: "Keep editing",
@@ -299,6 +300,7 @@ const TRANSLATIONS = {
     light: "ライト",
     dark: "ダーク",
     saveSettings: "設定を保存",
+    settingsSaved: "設定を保存しました",
     unsavedChangesTitle: "未保存の変更を破棄しますか？",
     unsavedChangesDescription: "設定の変更はまだ保存されていません。",
     keepEditing: "編集を続ける",
@@ -435,6 +437,7 @@ const elements = {
   customModeInput: document.querySelector("#custom-mode-input"),
   sendDelaySelect: document.querySelector("#send-delay-select"),
   saveHistoryInput: document.querySelector("#save-history-input"),
+  settingsSaveStatus: document.querySelector("#settings-save-status"),
   languageSelect: document.querySelector("#language-select"),
   themeSelect: document.querySelector("#theme-select"),
   accentControl: document.querySelector("#accent-control"),
@@ -675,6 +678,17 @@ function fillSettingsForm() {
   renderMemoryList();
 }
 
+function clearSettingsSaveStatus() {
+  elements.settingsSaveStatus.textContent = "";
+  elements.settingsSaveStatus.classList.remove("is-visible", "is-error");
+}
+
+function showSettingsSaveStatus(message, isError = false) {
+  elements.settingsSaveStatus.textContent = message;
+  elements.settingsSaveStatus.classList.toggle("is-error", isError);
+  elements.settingsSaveStatus.classList.add("is-visible");
+}
+
 function memoryItems(value) {
   return String(value || "")
     .split(/\n+/)
@@ -719,6 +733,7 @@ function addMemoryDraft() {
   }
   state.formDraft.memory = combined;
   elements.memoryAddInput.value = "";
+  clearSettingsSaveStatus();
   renderMemoryList();
 }
 
@@ -727,6 +742,7 @@ function removeMemoryDraft(index) {
   const items = memoryItems(state.formDraft.memory);
   items.splice(index, 1);
   state.formDraft.memory = items.join("\n");
+  clearSettingsSaveStatus();
   renderMemoryList();
 }
 
@@ -749,6 +765,7 @@ function selectChoice(event, key) {
   if (key === "tone" && VALID_TONES.has(value)) state.formDraft.tone = value;
   if (key === "length" && VALID_LENGTHS.has(value)) state.formDraft.replyLength = value;
   if (key === "accent" && VALID_ACCENTS.has(value)) state.formDraft.accent = value;
+  clearSettingsSaveStatus();
   applyChoiceState(event.currentTarget, key, value);
 }
 
@@ -778,6 +795,7 @@ function selectSettingsTab(name) {
 
 function openSettings(tabName = "general") {
   fillSettingsForm();
+  clearSettingsSaveStatus();
   renderAccount();
   showDialog(elements.settingsDialog);
   selectSettingsTab(tabName);
@@ -872,9 +890,9 @@ async function saveSettings(event) {
 
   if (state.authUser && state.supabase) {
     const saved = await saveCloudProfile();
-    showToast(translate(saved ? "synced" : "cloudFailed"));
+    showSettingsSaveStatus(translate(saved ? "settingsSaved" : "cloudFailed"), !saved);
   } else {
-    showToast(translate("localSaved"));
+    showSettingsSaveStatus(translate("settingsSaved"));
   }
 }
 
@@ -1805,6 +1823,8 @@ elements.settingsDialog.addEventListener("cancel", (event) => {
   closeSettings();
 });
 elements.settingsForm.addEventListener("submit", saveSettings);
+elements.settingsForm.addEventListener("input", clearSettingsSaveStatus);
+elements.settingsForm.addEventListener("change", clearSettingsSaveStatus);
 elements.settingsTabs.addEventListener("click", handleSettingsTabClick);
 elements.settingsTabs.addEventListener("keydown", handleSettingsTabKeydown);
 elements.addMemory.addEventListener("click", addMemoryDraft);

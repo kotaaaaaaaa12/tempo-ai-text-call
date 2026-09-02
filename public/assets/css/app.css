@@ -73,8 +73,8 @@ html {
   text-size-adjust: 100%;
 }
 
-:root[data-font-size="small"] { font-size: 0.9375rem; }
-:root[data-font-size="large"] { font-size: 1.125rem; }
+:root[data-font-size="small"] { font-size: 0.875rem; }
+:root[data-font-size="large"] { font-size: 1.1875rem; }
 
 body {
   min-width: 320px;
@@ -537,6 +537,7 @@ button:disabled { cursor: default; opacity: 0.45; }
 }
 .settings-form .dialog-header,
 .settings-tabs,
+.settings-save-status,
 #save-settings { flex: 0 0 auto; }
 .settings-tabs {
   display: grid;
@@ -573,6 +574,22 @@ button:disabled { cursor: default; opacity: 0.45; }
 .settings-panel { display: grid; width: 100%; min-width: 0; gap: 18px; padding-bottom: 2px; }
 .settings-panel > * { min-width: 0; }
 #save-settings { margin-top: 0; }
+.settings-save-status {
+  display: flex;
+  min-height: 18px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: -5px 0 -7px;
+  color: var(--green);
+  font-size: 0.6875rem;
+  font-weight: 720;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+.settings-save-status.is-visible { opacity: 1; }
+.settings-save-status.is-visible::before { content: "✓"; font-weight: 900; }
+.settings-save-status.is-error { color: var(--danger); }
 .section-heading { display: grid; gap: 5px; }
 .section-heading h3,
 .section-heading p { margin: 0; }

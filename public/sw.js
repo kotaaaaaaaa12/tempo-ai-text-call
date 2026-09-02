@@ -1,8 +1,8 @@
-const CACHE_NAME = "tempo-shell-v16";
+const CACHE_NAME = "tempo-shell-v17";
 const APP_SHELL = [
   "/",
-  "/assets/css/app.css?v=16",
-  "/assets/js/app.js?v=16",
+  "/assets/css/app.css?v=17",
+  "/assets/js/app.js?v=17",
   "/manifest.webmanifest",
   "/assets/icons/favicon.svg",
   "/assets/icons/icon-192.png",
