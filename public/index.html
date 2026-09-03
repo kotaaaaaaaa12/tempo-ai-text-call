@@ -13,8 +13,8 @@
     <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
     <link rel="manifest" href="/manifest.webmanifest">
-    <link rel="stylesheet" href="/assets/css/app.css?v=19">
-    <script type="module" src="/assets/js/app.js?v=19"></script>
+    <link rel="stylesheet" href="/assets/css/app.css?v=20">
+    <script type="module" src="/assets/js/app.js?v=20"></script>
   </head>
   <body>
     <main class="app-shell" id="app">
@@ -214,8 +214,25 @@
 
           <section class="settings-panel is-hidden" id="settings-panel-account" role="tabpanel" aria-labelledby="settings-tab-account" data-settings-panel="account">
             <section class="account-card">
-              <div><strong id="account-name">Guest</strong><span id="account-status">Settings stay on this device</span></div>
-              <button class="google-button" id="google-sign-in" type="button"><b>G</b><span data-i18n="continueGoogle">Continue with Google</span></button>
+              <div class="account-identity"><strong id="account-name">Guest</strong><span id="account-status">Settings stay on this device</span></div>
+              <div class="auth-options" id="auth-options">
+                <button class="google-button" id="google-sign-in" type="button"><b>G</b><span data-i18n="continueGoogle">Continue with Google</span></button>
+                <div class="auth-divider" aria-hidden="true"><span data-i18n="or">or</span></div>
+                <section class="email-auth-panel" id="email-auth" aria-labelledby="email-auth-title">
+                  <div class="section-heading">
+                    <h3 id="email-auth-title" data-i18n="emailAuthTitle">Email and password</h3>
+                    <p data-i18n="emailAuthDescription">Use the same account on any device.</p>
+                  </div>
+                  <div class="auth-mode-switch" id="email-auth-mode" role="group" aria-label="Email authentication mode" data-i18n-aria-label="emailAuthMode">
+                    <button type="button" data-auth-mode="signIn" aria-pressed="true" data-i18n="signIn">Sign in</button>
+                    <button type="button" data-auth-mode="signUp" aria-pressed="false" data-i18n="signUp">Sign up</button>
+                  </div>
+                  <label class="field"><span data-i18n="email">Email</span><input id="auth-email" name="email" type="email" inputmode="email" autocomplete="email" autocapitalize="none" spellcheck="false" maxlength="254" placeholder="you@example.com" required></label>
+                  <label class="field"><span data-i18n="password">Password</span><input id="auth-password" name="password" type="password" autocomplete="current-password" minlength="8" maxlength="128" aria-describedby="password-hint" data-i18n-placeholder="passwordPlaceholder" placeholder="At least 8 characters" required><small id="password-hint" data-i18n="passwordHint">Use at least 8 characters.</small></label>
+                  <p class="email-auth-status" id="email-auth-status" role="status" aria-live="polite" aria-atomic="true"></p>
+                  <button class="primary-button email-auth-submit" id="email-auth-submit" type="button" data-i18n="signIn">Sign in</button>
+                </section>
+              </div>
               <div class="account-actions is-hidden" id="account-actions">
                 <button class="secondary-button compact-button" id="reset-personalization" type="button" data-i18n="resetPersonalization">Reset personalization</button>
                 <button class="text-button" id="sign-out" type="button" data-i18n="signOut">Sign out</button>

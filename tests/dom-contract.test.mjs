@@ -31,10 +31,10 @@ test("the application shell uses organized versioned asset paths", async () => {
     readFile(new URL("../public/index.html", import.meta.url), "utf8"),
     readFile(new URL("../public/sw.js", import.meta.url), "utf8")
   ]);
-  assert.match(html, /\/assets\/css\/app\.css\?v=19/);
-  assert.match(html, /\/assets\/js\/app\.js\?v=19/);
+  assert.match(html, /\/assets\/css\/app\.css\?v=20/);
+  assert.match(html, /\/assets\/js\/app\.js\?v=20/);
   assert.match(html, /\/assets\/icons\/favicon\.svg/);
-  assert.match(worker, /tempo-shell-v19/);
+  assert.match(worker, /tempo-shell-v20/);
   assert.doesNotMatch(worker, /"\/sse\.js"/);
 });
 
@@ -202,4 +202,25 @@ test("account and settings open the unified settings hub with three language cho
   assert.match(html, /<option value="en">English<\/option>/);
   assert.match(html, /<option value="ja">日本語<\/option>/);
   assert.match(app, /startsWith\("ja"\) \? "ja" : "en"/);
+});
+
+test("account settings support Google and email password authentication", async () => {
+  const [html, app, workerConfig] = await Promise.all([
+    readFile(new URL("../public/index.html", import.meta.url), "utf8"),
+    readFile(new URL("../src/client/app.js", import.meta.url), "utf8"),
+    readFile(new URL("../wrangler.jsonc", import.meta.url), "utf8")
+  ]);
+
+  for (const id of ["auth-options", "google-sign-in", "email-auth", "auth-email", "auth-password", "email-auth-submit"]) {
+    assert.match(html, new RegExp(`id="${id}"`));
+  }
+  assert.match(html, /data-auth-mode="signIn"[^>]+aria-pressed="true"/);
+  assert.match(html, /data-auth-mode="signUp"[^>]+aria-pressed="false"/);
+  assert.match(html, /id="auth-password"[^>]+autocomplete="current-password"[^>]+minlength="8"/);
+  assert.match(app, /supabase\.auth\.signInWithPassword\(\{ email, password \}\)/);
+  assert.match(app, /supabase\.auth\.signUp\(\{[\s\S]*?emailRedirectTo: `\$\{window\.location\.origin\}\//);
+  assert.match(app, /emailAuth\.addEventListener\("keydown"/);
+  assert.match(app, /event\.preventDefault\(\);\s*void submitEmailAuth\(\)/);
+  assert.match(app, /authOptions\.classList\.add\("is-hidden"\)/);
+  assert.doesNotMatch(workerConfig, /send_email|"EMAIL"/);
 });

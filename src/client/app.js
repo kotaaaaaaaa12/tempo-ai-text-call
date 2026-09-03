@@ -68,6 +68,28 @@ const TRANSLATIONS = {
     accountPanelTitle: "Account",
     closeAccount: "Close account",
     continueGoogle: "Continue with Google",
+    or: "or",
+    emailAuthTitle: "Email and password",
+    emailAuthDescription: "Use the same account on any device.",
+    emailAuthMode: "Email authentication mode",
+    email: "Email",
+    password: "Password",
+    passwordPlaceholder: "At least 8 characters",
+    passwordHint: "Use at least 8 characters.",
+    signIn: "Sign in",
+    signUp: "Sign up",
+    enterValidEmail: "Enter a valid email address.",
+    passwordTooShort: "Password must be at least 8 characters.",
+    checkEmail: "Check your email to confirm your account.",
+    accountCreated: "Account created and signed in",
+    signedIn: "Signed in",
+    invalidCredentials: "The email or password is incorrect.",
+    emailNotConfirmed: "Confirm your email before signing in.",
+    emailAlreadyRegistered: "An account with this email already exists.",
+    weakPassword: "Choose a stronger password.",
+    emailRateLimited: "Too many email requests. Try again later.",
+    signupDisabled: "Email sign-up is currently disabled.",
+    emailAuthFailed: "Email authentication failed. Try again.",
     signOut: "Sign out",
     accountNote: "Sign in to sync personalization between devices.",
     personalize: "Personalize",
@@ -133,7 +155,7 @@ const TRANSLATIONS = {
     opening: "Hey — what’s on your mind?",
     guest: "Guest",
     deviceOnly: "Settings stay on this device",
-    checkingSignIn: "Checking Google sign-in…",
+    checkingSignIn: "Checking sign-in…",
     syncOn: "Personalization sync is on",
     googleAccount: "Google account",
     signedInNeedsSchema: "Signed in; run supabase/schema.sql to sync",
@@ -156,8 +178,8 @@ const TRANSLATIONS = {
     stopped: "{name} stopped replying",
     finished: "{name} finished replying",
     authMissing: "Missing Cloudflare runtime variable: {names}",
-    authSetupError: "Google sign-in setup error: {message}",
-    authLoadError: "Google sign-in setup could not be loaded",
+    authSetupError: "Sign-in setup error: {message}",
+    authLoadError: "Sign-in setup could not be loaded",
     suggestedActions: "Suggested actions",
     chooseAction: "Choose an option, or keep typing.",
     conversationMode: "Conversation mode",
@@ -246,6 +268,28 @@ const TRANSLATIONS = {
     accountPanelTitle: "アカウント",
     closeAccount: "アカウント画面を閉じる",
     continueGoogle: "Googleで続ける",
+    or: "または",
+    emailAuthTitle: "メールアドレスとパスワード",
+    emailAuthDescription: "どの端末でも同じアカウントを利用できます。",
+    emailAuthMode: "メール認証の切り替え",
+    email: "メールアドレス",
+    password: "パスワード",
+    passwordPlaceholder: "8文字以上",
+    passwordHint: "8文字以上で入力してください。",
+    signIn: "ログイン",
+    signUp: "新規登録",
+    enterValidEmail: "有効なメールアドレスを入力してください。",
+    passwordTooShort: "パスワードは8文字以上で入力してください。",
+    checkEmail: "確認メールを送信しました。メール内のリンクを開いてください。",
+    accountCreated: "アカウントを作成してログインしました",
+    signedIn: "ログインしました",
+    invalidCredentials: "メールアドレスまたはパスワードが違います。",
+    emailNotConfirmed: "メールアドレスの確認後にログインしてください。",
+    emailAlreadyRegistered: "このメールアドレスはすでに登録されています。",
+    weakPassword: "より強いパスワードを設定してください。",
+    emailRateLimited: "メール送信回数が多すぎます。しばらく待ってから試してください。",
+    signupDisabled: "現在、メールでの新規登録は無効です。",
+    emailAuthFailed: "メール認証に失敗しました。もう一度試してください。",
     signOut: "ログアウト",
     accountNote: "ログインすると端末間でパーソナライズ設定を同期できます。",
     personalize: "パーソナライズ",
@@ -311,7 +355,7 @@ const TRANSLATIONS = {
     opening: "こんにちは。今日は何を話そうか？",
     guest: "ゲスト",
     deviceOnly: "設定はこの端末に保存されます",
-    checkingSignIn: "Googleログインを確認中…",
+    checkingSignIn: "ログイン状態を確認中…",
     syncOn: "パーソナライズ設定を同期中",
     googleAccount: "Googleアカウント",
     signedInNeedsSchema: "ログイン済み。同期にはsupabase/schema.sqlの実行が必要です",
@@ -334,8 +378,8 @@ const TRANSLATIONS = {
     stopped: "{name}が返答を停止しました",
     finished: "{name}が返答しました",
     authMissing: "Cloudflareのランタイム変数が見つかりません: {names}",
-    authSetupError: "Googleログインの設定エラー: {message}",
-    authLoadError: "Googleログイン設定を読み込めませんでした",
+    authSetupError: "ログイン設定のエラー: {message}",
+    authLoadError: "ログイン設定を読み込めませんでした",
     suggestedActions: "提案されたアクション",
     chooseAction: "選択肢を押すか、そのまま入力してください。",
     conversationMode: "会話モード",
@@ -413,7 +457,15 @@ const elements = {
   settingsTabs: document.querySelector(".settings-tabs"),
   settingsTabButtons: document.querySelectorAll("[data-settings-tab]"),
   settingsPanels: document.querySelectorAll("[data-settings-panel]"),
+  authOptions: document.querySelector("#auth-options"),
   googleSignIn: document.querySelector("#google-sign-in"),
+  emailAuth: document.querySelector("#email-auth"),
+  emailAuthMode: document.querySelector("#email-auth-mode"),
+  emailAuthModeButtons: document.querySelectorAll("[data-auth-mode]"),
+  authEmail: document.querySelector("#auth-email"),
+  authPassword: document.querySelector("#auth-password"),
+  emailAuthStatus: document.querySelector("#email-auth-status"),
+  emailAuthSubmit: document.querySelector("#email-auth-submit"),
   signOut: document.querySelector("#sign-out"),
   accountActions: document.querySelector("#account-actions"),
   resetPersonalization: document.querySelector("#reset-personalization"),
@@ -495,6 +547,8 @@ const state = {
   loadedProfileFor: "",
   authConfigured: false,
   authInitializing: false,
+  authMode: "signIn",
+  emailAuthBusy: false,
   authProblem: null,
   locale: "en",
   currentConversationId: null,
@@ -599,6 +653,7 @@ function applyTranslations() {
   }
 
   elements.startTitle.textContent = translate("talkTo", { name: aiName() });
+  elements.emailAuthSubmit.textContent = translate(state.authMode);
   const status = elements.screens.call.dataset.status;
   elements.connectionLabel.textContent = translate(status === "offline" ? "connectionLost" : "connected");
   updateSendHint();
@@ -900,7 +955,7 @@ async function initAuth(showProblem = false) {
   if (state.supabase) return true;
   if (state.authInitializing) return false;
   state.authInitializing = true;
-  elements.googleSignIn.setAttribute("aria-busy", "true");
+  elements.authOptions.setAttribute("aria-busy", "true");
   try {
     const response = await fetch("/api/config", { cache: "no-store" });
     const config = await response.json();
@@ -943,7 +998,7 @@ async function initAuth(showProblem = false) {
     return false;
   } finally {
     state.authInitializing = false;
-    elements.googleSignIn.removeAttribute("aria-busy");
+    elements.authOptions.removeAttribute("aria-busy");
     renderAccount();
   }
 }
@@ -977,7 +1032,7 @@ function renderAccount() {
     elements.accountButton.textContent = String(label).split(/\s+/)[0].slice(0, 14);
     elements.accountName.textContent = String(metadataName || state.authUser.email || translate("googleAccount"));
     elements.accountStatus.textContent = translate(state.profileSchemaReady ? "syncOn" : "signedInNeedsSchema");
-    elements.googleSignIn.classList.add("is-hidden");
+    elements.authOptions.classList.add("is-hidden");
     elements.accountActions.classList.remove("is-hidden");
     return;
   }
@@ -989,8 +1044,100 @@ function renderAccount() {
     : state.authProblem
       ? translate(state.authProblem.key, state.authProblem.variables)
       : translate("checkingSignIn");
-  elements.googleSignIn.classList.remove("is-hidden");
+  elements.authOptions.classList.remove("is-hidden");
   elements.accountActions.classList.add("is-hidden");
+}
+
+function showEmailAuthStatus(message = "", isError = false) {
+  elements.emailAuthStatus.textContent = message;
+  elements.emailAuthStatus.classList.toggle("is-error", isError);
+}
+
+function setEmailAuthMode(mode) {
+  if (mode !== "signIn" && mode !== "signUp") return;
+  state.authMode = mode;
+  for (const button of elements.emailAuthModeButtons) {
+    button.setAttribute("aria-pressed", String(button.dataset.authMode === mode));
+  }
+  elements.authPassword.autocomplete = mode === "signUp" ? "new-password" : "current-password";
+  elements.emailAuthSubmit.textContent = translate(mode);
+  showEmailAuthStatus();
+}
+
+function setEmailAuthBusy(isBusy) {
+  state.emailAuthBusy = isBusy;
+  elements.emailAuthSubmit.disabled = isBusy;
+  elements.authEmail.readOnly = isBusy;
+  elements.authPassword.readOnly = isBusy;
+  elements.emailAuth.setAttribute("aria-busy", String(isBusy));
+}
+
+function emailAuthErrorKey(error) {
+  const code = typeof error?.code === "string" ? error.code : "";
+  const errorKeys = {
+    invalid_credentials: "invalidCredentials",
+    email_not_confirmed: "emailNotConfirmed",
+    user_already_exists: "emailAlreadyRegistered",
+    email_exists: "emailAlreadyRegistered",
+    weak_password: "weakPassword",
+    over_email_send_rate_limit: "emailRateLimited",
+    signup_disabled: "signupDisabled",
+    email_provider_disabled: "signupDisabled"
+  };
+  return errorKeys[code] || "emailAuthFailed";
+}
+
+async function submitEmailAuth() {
+  if (state.emailAuthBusy) return;
+  const email = elements.authEmail.value.trim();
+  const password = elements.authPassword.value;
+
+  if (!email || !elements.authEmail.validity.valid) {
+    showEmailAuthStatus(translate("enterValidEmail"), true);
+    elements.authEmail.focus({ preventScroll: true });
+    return;
+  }
+  if (password.length < 8) {
+    showEmailAuthStatus(translate("passwordTooShort"), true);
+    elements.authPassword.focus({ preventScroll: true });
+    return;
+  }
+
+  if (!state.supabase) {
+    const ready = await initAuth(true);
+    if (!ready || !state.supabase) return;
+  }
+
+  setEmailAuthBusy(true);
+  showEmailAuthStatus();
+  try {
+    if (state.authMode === "signUp") {
+      const { data, error } = await state.supabase.auth.signUp({
+        email,
+        password,
+        options: { emailRedirectTo: `${window.location.origin}/` }
+      });
+      if (error) throw error;
+      elements.authPassword.value = "";
+      if (data.session) {
+        await handleSession(data.session);
+        showToast(translate("accountCreated"));
+      } else {
+        showEmailAuthStatus(translate("checkEmail"));
+      }
+      return;
+    }
+
+    const { data, error } = await state.supabase.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    elements.authPassword.value = "";
+    await handleSession(data.session);
+    showToast(translate("signedIn"));
+  } catch (error) {
+    showEmailAuthStatus(translate(emailAuthErrorKey(error)), true);
+  } finally {
+    setEmailAuthBusy(false);
+  }
 }
 
 async function signInWithGoogle() {
@@ -1015,6 +1162,7 @@ async function signOut() {
   }
   state.authUser = null;
   state.loadedProfileFor = "";
+  elements.authPassword.value = "";
   renderAccount();
   showToast(translate("signedOut"));
 }
@@ -1847,6 +1995,17 @@ elements.memoryAddInput.addEventListener("keydown", (event) => {
   addMemoryDraft();
 });
 elements.googleSignIn.addEventListener("click", signInWithGoogle);
+elements.emailAuthMode.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-auth-mode]");
+  if (button) setEmailAuthMode(button.dataset.authMode);
+});
+elements.emailAuth.addEventListener("input", () => showEmailAuthStatus());
+elements.emailAuth.addEventListener("keydown", (event) => {
+  if (event.key !== "Enter" || !event.target.matches("input")) return;
+  event.preventDefault();
+  void submitEmailAuth();
+});
+elements.emailAuthSubmit.addEventListener("click", submitEmailAuth);
 elements.signOut.addEventListener("click", signOut);
 elements.clearHistory.addEventListener("click", requestHistoryClear);
 elements.resetPersonalization.addEventListener("click", requestPersonalizationReset);

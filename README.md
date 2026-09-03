@@ -2,7 +2,7 @@
 
 `tempo` is a mobile-first live AI text-call app. The user types without a send button, the current turn is submitted after a short pause, and the reply streams in through the OpenAI Responses API.
 
-The frontend and API run from one Cloudflare Worker. Google sign-in and synchronized personalization use Supabase Auth and Postgres Row Level Security.
+The frontend and API run from one Cloudflare Worker. Google or email/password sign-in and synchronized personalization use Supabase Auth and Postgres Row Level Security.
 
 ## Project structure
 
@@ -38,7 +38,7 @@ Keep `public/assets/js/app.js` committed for direct Worker deploys, but edit `sr
 - OpenAI Responses API streaming over server-sent events
 - Optional AI-generated reply and memory action chips between the two speaker panels
 - General, Study, English practice, Brainstorm, Advice, and Custom conversation modes
-- Optional Google sign-in with PKCE
+- Optional Google sign-in with PKCE and email/password sign-up
 - Guest settings stored only on the device
 - Signed-in settings synchronized between devices
 - Explicit memory approval: suggested details are remembered only after the user taps the action
@@ -71,9 +71,9 @@ Set `OPENAI_API_KEY` in `.dev.vars`, then run:
 npm run dev
 ```
 
-Google login is optional. The app continues to work in guest mode until Supabase is configured.
+Sign-in is optional. The app continues to work in guest mode until Supabase is configured.
 
-## Google sign-in setup
+## Sign-in setup
 
 ### 1. Create the profile table
 
@@ -96,7 +96,22 @@ In **Supabase > Authentication > URL Configuration**:
 - Add the same deployed Worker URL to **Redirect URLs**.
 - Add the local Wrangler URL only when testing Google login locally.
 
-### 3. Add Cloudflare runtime variables
+### 3. Configure email and password
+
+In **Supabase > Authentication > Sign In / Providers > Email**, enable the Email provider and keep **Confirm email** enabled for public use.
+
+Supabase's built-in mailer is limited and intended only for testing. For production, connect Cloudflare Email Sending to Supabase as custom SMTP:
+
+- Host: `smtp.mx.cloudflare.net`
+- Port: `465`
+- Username: `api_token`
+- Password: a Cloudflare API token with **Email Sending: Edit** permission
+- Sender email: an address on the onboarded domain, such as `welcome@what-the-fuck.men`
+- Sender name: `tempo`
+
+Configure these values in **Supabase > Authentication > SMTP Settings**. Do not add the SMTP token to the repository or browser code. Email Routing is only for incoming mail and is not required for sign-up confirmations.
+
+### 4. Add Cloudflare runtime variables
 
 Copy the Project URL and publishable key from the Supabase project settings. In **Cloudflare > Worker > Settings > Variables and Secrets**, add:
 
@@ -142,7 +157,7 @@ The committed browser bundle allows the previous `npx wrangler deploy` command t
 - The current settings are sent with each OpenAI request so the server can set the AI name, tone, reply length, conversation mode, and relevant user context. Interface-only appearance settings are ignored by the AI.
 - Remembered text is treated as untrusted user background, not as system instructions.
 - Suggested memories are never saved automatically; the user must tap the clearly labeled memory action.
-- Conversation history is off by default and requires Google sign-in. When enabled, the app saves only to the signed-in user's RLS-protected rows in Supabase.
+- Conversation history is off by default and requires sign-in. When enabled, the app saves only to the signed-in user's RLS-protected rows in Supabase.
 - OpenAI requests use `store: false` regardless of the history setting.
 
 ## PWA updates

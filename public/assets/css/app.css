@@ -620,7 +620,7 @@ button:disabled { cursor: default; opacity: 0.45; }
   background: var(--soft);
 }
 
-.account-card > div:not(.account-actions) { display: flex; flex-direction: column; gap: 3px; }
+.account-identity { display: flex; flex-direction: column; gap: 3px; }
 .account-card strong { font-size: 0.8125rem; }
 .account-card span { color: var(--muted); font-size: 0.625rem; }
 .account-actions { display: grid; gap: 8px; }
@@ -628,6 +628,37 @@ button:disabled { cursor: default; opacity: 0.45; }
 
 .google-button { gap: 10px; min-height: 46px; background: var(--raised); color: var(--ink); }
 .google-button b { display: grid; width: 22px; height: 22px; border: 1px solid var(--line); border-radius: 50%; color: #4285f4; font-size: 0.75rem; place-items: center; }
+.auth-options,
+.email-auth-panel { display: grid; gap: 11px; }
+.auth-divider {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  color: var(--muted);
+  font-size: 0.5625rem;
+}
+.auth-divider::before,
+.auth-divider::after { height: 1px; background: var(--line); content: ""; }
+.auth-mode-switch { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; }
+.auth-mode-switch button {
+  min-height: 40px;
+  border-radius: 12px;
+  background: var(--raised);
+  color: var(--muted);
+  font-size: 0.6875rem;
+  font-weight: 750;
+}
+.auth-mode-switch button[aria-pressed="true"] { background: var(--control-accent); color: var(--control-accent-ink); }
+.email-auth-submit { min-height: 46px; }
+.email-auth-status {
+  min-height: 17px;
+  margin: -2px 0;
+  color: var(--green);
+  font-size: 0.625rem;
+  line-height: 1.4;
+}
+.email-auth-status.is-error { color: var(--danger); }
 .text-button { justify-self: start; min-height: 34px; padding: 0; background: transparent; color: var(--muted); }
 .is-hidden { display: none !important; }
 
