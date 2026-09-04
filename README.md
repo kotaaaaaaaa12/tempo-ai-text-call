@@ -51,6 +51,7 @@ Keep `public/assets/js/app.js` committed for direct Worker deploys, but edit `sr
 - Confirmation dialogs restore focus to an invisible passive heading instead of the settings dialog container
 - Unsaved settings confirmation before closing with the close button or Escape
 - Saving settings keeps the current tab and scroll position open for continued adjustments
+- Email-auth field validation never blocks the separate settings save action
 - An inline saved status above the save button remains visible until another setting is changed
 - The call summary returns to the home screen instead of immediately starting another call
 - Fixed settings footer with only the active tab panel scrolling vertically

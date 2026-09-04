@@ -13,8 +13,8 @@
     <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
     <link rel="manifest" href="/manifest.webmanifest">
-    <link rel="stylesheet" href="/assets/css/app.css?v=21">
-    <script type="module" src="/assets/js/app.js?v=21"></script>
+    <link rel="stylesheet" href="/assets/css/app.css?v=22">
+    <script type="module" src="/assets/js/app.js?v=22"></script>
   </head>
   <body>
     <main class="app-shell" id="app">
@@ -94,7 +94,7 @@
     </main>
 
     <dialog class="app-dialog settings-dialog" id="settings-dialog" aria-labelledby="settings-title">
-      <form class="dialog-form settings-form" id="settings-form">
+      <form class="dialog-form settings-form" id="settings-form" novalidate>
         <header class="dialog-header">
           <div><p class="eyebrow">tempo</p><h2 id="settings-title" data-dialog-focus tabindex="-1" data-i18n="settings">Settings</h2></div>
           <button class="icon-button" id="close-settings" type="button" aria-label="Close settings" data-i18n-aria-label="closeSettings">
@@ -232,8 +232,8 @@
                     <button type="button" data-auth-mode="signIn" aria-pressed="true" data-i18n="signIn">Sign in</button>
                     <button type="button" data-auth-mode="signUp" aria-pressed="false" data-i18n="signUp">Sign up</button>
                   </div>
-                  <label class="field"><span data-i18n="email">Email</span><input id="auth-email" name="email" type="email" inputmode="email" autocomplete="email" autocapitalize="none" spellcheck="false" maxlength="254" placeholder="you@example.com" required></label>
-                  <label class="field"><span data-i18n="password">Password</span><input id="auth-password" name="password" type="password" autocomplete="current-password" minlength="8" maxlength="128" aria-describedby="password-hint" data-i18n-placeholder="passwordPlaceholder" placeholder="At least 8 characters" required><small id="password-hint" data-i18n="passwordHint">Use at least 8 characters.</small></label>
+                  <label class="field"><span data-i18n="email">Email</span><input id="auth-email" name="email" type="email" inputmode="email" autocomplete="email" autocapitalize="none" spellcheck="false" maxlength="254" placeholder="you@example.com"></label>
+                  <label class="field"><span data-i18n="password">Password</span><input id="auth-password" name="password" type="password" autocomplete="current-password" minlength="8" maxlength="128" aria-describedby="password-hint" data-i18n-placeholder="passwordPlaceholder" placeholder="At least 8 characters"><small id="password-hint" data-i18n="passwordHint">Use at least 8 characters.</small></label>
                   <p class="email-auth-status" id="email-auth-status" role="status" aria-live="polite" aria-atomic="true"></p>
                   <button class="primary-button email-auth-submit" id="email-auth-submit" type="button" data-i18n="signIn">Sign in</button>
                 </section>
@@ -249,7 +249,7 @@
         </div>
 
         <p class="settings-save-status" id="settings-save-status" role="status" aria-live="polite" aria-atomic="true"></p>
-        <button class="primary-button" id="save-settings" type="submit" data-i18n="saveSettings">Save settings</button>
+        <button class="primary-button" id="save-settings" type="submit" formnovalidate data-i18n="saveSettings">Save settings</button>
       </form>
     </dialog>
 
