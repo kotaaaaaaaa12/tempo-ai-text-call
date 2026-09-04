@@ -31,10 +31,10 @@ test("the application shell uses organized versioned asset paths", async () => {
     readFile(new URL("../public/index.html", import.meta.url), "utf8"),
     readFile(new URL("../public/sw.js", import.meta.url), "utf8")
   ]);
-  assert.match(html, /\/assets\/css\/app\.css\?v=22/);
-  assert.match(html, /\/assets\/js\/app\.js\?v=22/);
+  assert.match(html, /\/assets\/css\/app\.css\?v=23/);
+  assert.match(html, /\/assets\/js\/app\.js\?v=23/);
   assert.match(html, /\/assets\/icons\/favicon\.svg/);
-  assert.match(worker, /tempo-shell-v22/);
+  assert.match(worker, /tempo-shell-v23/);
   assert.doesNotMatch(worker, /"\/sse\.js"/);
 });
 
@@ -171,10 +171,18 @@ test("appearance settings provide accents, text sizing, and motion without a den
   assert.match(app, /VALID_ACCENTS/);
   assert.match(app, /VALID_FONT_SIZES/);
   assert.match(app, /VALID_MOTION/);
-  assert.match(app, /dataset\.accent = state\.settings\.accent/);
+  assert.match(app, /applyAccent\(state\.settings\.accent, state\.settings\.customAccent\)/);
   assert.match(app, /dataset\.fontSize = state\.settings\.fontSize/);
   assert.match(app, /dataset\.motion = state\.settings\.motion/);
   assert.match(css, /:root\[data-accent="blue"\]/);
+  for (const accent of ["blue", "green", "yellow", "pink", "orange", "purple", "default", "custom"]) {
+    assert.match(html, new RegExp(`data-accent="${accent}"`));
+  }
+  assert.match(html, /id="custom-accent-input"[^>]+type="color"/);
+  assert.match(app, /function updateCustomAccentDraft\(\)/);
+  assert.match(app, /readableTextColor\(color\)/);
+  assert.doesNotMatch(html, /data-accent="(?:coral|violet)"/);
+  assert.match(css, /grid-template-columns:\s*repeat\(4, minmax\(0, 1fr\)\)/);
   assert.match(css, /:root\[data-font-size="large"\]/);
   assert.match(css, /:root\[data-font-size="small"\]\s*\{\s*font-size:\s*0\.875rem/);
   assert.match(css, /:root\[data-font-size="large"\]\s*\{\s*font-size:\s*1\.1875rem/);

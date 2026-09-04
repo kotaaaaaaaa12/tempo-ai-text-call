@@ -28,7 +28,7 @@ Keep `public/assets/js/app.js` committed for direct Worker deploys, but edit `sr
 ## Features
 
 - Minimal mobile interface with light and dark themes
-- Default, coral, blue, violet, and green accent choices while preserving the original look for existing users
+- Blue, green, yellow, pink, orange, purple, white, and a custom color picker with automatic text contrast
 - Small, standard, and large interface text sizes with iOS input zoom protection
 - Auto, full, reduced, and disabled animation settings with system reduced-motion support
 - English and Japanese UI with Auto, English, and Japanese language settings

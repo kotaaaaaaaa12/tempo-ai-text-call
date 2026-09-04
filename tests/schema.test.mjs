@@ -26,7 +26,11 @@ test("the schema adds private history, personalization fields, and self-service 
 test("the profile migration adds synchronized appearance preferences", async () => {
   const sql = await readFile(new URL("../supabase/schema.sql", import.meta.url), "utf8");
   assert.match(sql, /add column if not exists accent/i);
-  assert.match(sql, /accent in \('default', 'coral', 'blue', 'violet', 'green'\)/i);
+  assert.match(sql, /accent in \('default', 'blue', 'green', 'yellow', 'pink', 'orange', 'purple', 'custom'\)/i);
+  assert.match(sql, /add column if not exists custom_accent/i);
+  assert.match(sql, /custom_accent ~ '\^#\[0-9a-fA-F\]\{6\}\$'/i);
+  assert.match(sql, /when accent = 'coral' then 'orange'/i);
+  assert.match(sql, /when accent = 'violet' then 'purple'/i);
   assert.match(sql, /add column if not exists font_size/i);
   assert.match(sql, /font_size in \('small', 'standard', 'large'\)/i);
   assert.match(sql, /add column if not exists motion/i);

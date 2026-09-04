@@ -13,8 +13,8 @@
     <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
     <link rel="manifest" href="/manifest.webmanifest">
-    <link rel="stylesheet" href="/assets/css/app.css?v=22">
-    <script type="module" src="/assets/js/app.js?v=22"></script>
+    <link rel="stylesheet" href="/assets/css/app.css?v=23">
+    <script type="module" src="/assets/js/app.js?v=23"></script>
   </head>
   <body>
     <main class="app-shell" id="app">
@@ -124,12 +124,19 @@
             <fieldset class="choice-fieldset color-fieldset">
               <legend data-i18n="accentColor">Accent color</legend>
               <div class="color-choice-row" id="accent-control">
-                <button type="button" data-accent="default" aria-pressed="true"><span class="color-swatch swatch-default" aria-hidden="true"></span><b data-i18n="accentDefault">Default</b></button>
-                <button type="button" data-accent="coral" aria-pressed="false"><span class="color-swatch swatch-coral" aria-hidden="true"></span><b data-i18n="accentCoral">Coral</b></button>
                 <button type="button" data-accent="blue" aria-pressed="false"><span class="color-swatch swatch-blue" aria-hidden="true"></span><b data-i18n="accentBlue">Blue</b></button>
-                <button type="button" data-accent="violet" aria-pressed="false"><span class="color-swatch swatch-violet" aria-hidden="true"></span><b data-i18n="accentViolet">Violet</b></button>
                 <button type="button" data-accent="green" aria-pressed="false"><span class="color-swatch swatch-green" aria-hidden="true"></span><b data-i18n="accentGreen">Green</b></button>
+                <button type="button" data-accent="yellow" aria-pressed="false"><span class="color-swatch swatch-yellow" aria-hidden="true"></span><b data-i18n="accentYellow">Yellow</b></button>
+                <button type="button" data-accent="pink" aria-pressed="false"><span class="color-swatch swatch-pink" aria-hidden="true"></span><b data-i18n="accentPink">Pink</b></button>
+                <button type="button" data-accent="orange" aria-pressed="false"><span class="color-swatch swatch-orange" aria-hidden="true"></span><b data-i18n="accentOrange">Orange</b></button>
+                <button type="button" data-accent="purple" aria-pressed="false"><span class="color-swatch swatch-purple" aria-hidden="true"></span><b data-i18n="accentPurple">Purple</b></button>
+                <button type="button" data-accent="default" aria-pressed="true"><span class="color-swatch swatch-default" aria-hidden="true"></span><b data-i18n="accentDefault">White (Default)</b></button>
+                <button type="button" data-accent="custom" aria-pressed="false"><span class="color-swatch swatch-custom" id="custom-accent-swatch" aria-hidden="true"></span><b data-i18n="accentOther">Other</b></button>
               </div>
+              <label class="custom-color-field is-hidden" id="custom-accent-field">
+                <span data-i18n="customColor">Custom color</span>
+                <span class="custom-color-control"><input id="custom-accent-input" name="customAccent" type="color" value="#7c3aed"><output id="custom-accent-value" for="custom-accent-input">#7C3AED</output></span>
+              </label>
             </fieldset>
             <label class="theme-row">
               <span data-i18n="fontSize">Text size</span>

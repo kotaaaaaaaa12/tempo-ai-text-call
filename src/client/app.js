@@ -16,7 +16,7 @@ const SETTINGS_KEY = "tempo-settings-v2";
 const VALID_TONES = new Set(["casual", "thoughtful", "direct"]);
 const VALID_LENGTHS = new Set(["short", "balanced", "detailed"]);
 const VALID_THEMES = new Set(["auto", "light", "dark"]);
-const VALID_ACCENTS = new Set(["default", "coral", "blue", "violet", "green"]);
+const VALID_ACCENTS = new Set(["default", "blue", "green", "yellow", "pink", "orange", "purple", "custom"]);
 const VALID_FONT_SIZES = new Set(["small", "standard", "large"]);
 const VALID_MOTION = new Set(["auto", "full", "reduced", "none"]);
 const VALID_LANGUAGES = new Set(["auto", "en", "ja"]);
@@ -33,6 +33,7 @@ const DEFAULT_SETTINGS = Object.freeze({
   personalization: "",
   theme: "auto",
   accent: "default",
+  customAccent: "#7c3aed",
   fontSize: "standard",
   motion: "auto",
   language: "auto",
@@ -131,11 +132,15 @@ const TRANSLATIONS = {
     appearanceDescription: "Adjust the interface without changing how the AI talks.",
     theme: "Theme",
     accentColor: "Accent color",
-    accentDefault: "Default",
-    accentCoral: "Coral",
+    accentDefault: "White (Default)",
     accentBlue: "Blue",
-    accentViolet: "Violet",
     accentGreen: "Green",
+    accentYellow: "Yellow",
+    accentPink: "Pink",
+    accentOrange: "Orange",
+    accentPurple: "Purple",
+    accentOther: "Other",
+    customColor: "Custom color",
     fontSize: "Text size",
     fontSmall: "Small",
     fontStandard: "Standard",
@@ -335,11 +340,15 @@ const TRANSLATIONS = {
     appearanceDescription: "AIの話し方とは別に画面表示を調整できます。",
     theme: "テーマ",
     accentColor: "アクセントカラー",
-    accentDefault: "標準",
-    accentCoral: "コーラル",
+    accentDefault: "ホワイト（標準）",
     accentBlue: "ブルー",
-    accentViolet: "パープル",
     accentGreen: "グリーン",
+    accentYellow: "イエロー",
+    accentPink: "ピンク",
+    accentOrange: "オレンジ",
+    accentPurple: "パープル",
+    accentOther: "その他",
+    customColor: "カスタムカラー",
     fontSize: "文字サイズ",
     fontSmall: "小",
     fontStandard: "標準",
@@ -504,6 +513,10 @@ const elements = {
   languageSelect: document.querySelector("#language-select"),
   themeSelect: document.querySelector("#theme-select"),
   accentControl: document.querySelector("#accent-control"),
+  customAccentField: document.querySelector("#custom-accent-field"),
+  customAccentInput: document.querySelector("#custom-accent-input"),
+  customAccentValue: document.querySelector("#custom-accent-value"),
+  customAccentSwatch: document.querySelector("#custom-accent-swatch"),
   fontSizeSelect: document.querySelector("#font-size-select"),
   motionSelect: document.querySelector("#motion-select"),
   toneControl: document.querySelector("#tone-control"),
@@ -590,8 +603,46 @@ function writePreference(key, value) {
   }
 }
 
+function normalizeHexColor(value, fallback = DEFAULT_SETTINGS.customAccent) {
+  const candidate = typeof value === "string" ? value.trim() : "";
+  return /^#[0-9a-f]{6}$/i.test(candidate) ? candidate.toLowerCase() : fallback;
+}
+
+function readableTextColor(hexColor) {
+  const value = normalizeHexColor(hexColor).slice(1);
+  const channels = [0, 2, 4].map((offset) => Number.parseInt(value.slice(offset, offset + 2), 16));
+  const linear = channels.map((channel) => {
+    const normalized = channel / 255;
+    return normalized <= 0.04045
+      ? normalized / 12.92
+      : ((normalized + 0.055) / 1.055) ** 2.4;
+  });
+  const luminance = (0.2126 * linear[0]) + (0.7152 * linear[1]) + (0.0722 * linear[2]);
+  return luminance > 0.43 ? "#171715" : "#ffffff";
+}
+
+function applyAccent(accent, customAccent) {
+  const root = document.documentElement;
+  root.dataset.accent = VALID_ACCENTS.has(accent) ? accent : DEFAULT_SETTINGS.accent;
+  root.style.removeProperty("--accent");
+  root.style.removeProperty("--control-accent");
+  root.style.removeProperty("--control-accent-ink");
+
+  if (root.dataset.accent === "custom") {
+    const color = normalizeHexColor(customAccent);
+    root.style.setProperty("--accent", color);
+    root.style.setProperty("--control-accent", color);
+    root.style.setProperty("--control-accent-ink", readableTextColor(color));
+  }
+}
+
 function normalizeSettings(value) {
   const candidate = value && typeof value === "object" ? value : {};
+  const legacyAccent = candidate.accent === "coral"
+    ? "orange"
+    : candidate.accent === "violet"
+      ? "purple"
+      : candidate.accent;
   return {
     displayName: typeof candidate.displayName === "string" ? candidate.displayName.trim().slice(0, 40) : "",
     aiName: typeof candidate.aiName === "string" && candidate.aiName.trim()
@@ -602,7 +653,8 @@ function normalizeSettings(value) {
     memory: typeof candidate.memory === "string" ? candidate.memory.trim().slice(0, 500) : "",
     personalization: typeof candidate.personalization === "string" ? candidate.personalization.trim().slice(0, 1000) : "",
     theme: VALID_THEMES.has(candidate.theme) ? candidate.theme : DEFAULT_SETTINGS.theme,
-    accent: VALID_ACCENTS.has(candidate.accent) ? candidate.accent : DEFAULT_SETTINGS.accent,
+    accent: VALID_ACCENTS.has(legacyAccent) ? legacyAccent : DEFAULT_SETTINGS.accent,
+    customAccent: normalizeHexColor(candidate.customAccent, DEFAULT_SETTINGS.customAccent),
     fontSize: VALID_FONT_SIZES.has(candidate.fontSize) ? candidate.fontSize : DEFAULT_SETTINGS.fontSize,
     motion: VALID_MOTION.has(candidate.motion) ? candidate.motion : DEFAULT_SETTINGS.motion,
     language: VALID_LANGUAGES.has(candidate.language) ? candidate.language : DEFAULT_SETTINGS.language,
@@ -705,7 +757,7 @@ function applySettings() {
   } else {
     document.documentElement.dataset.theme = state.settings.theme;
   }
-  document.documentElement.dataset.accent = state.settings.accent;
+  applyAccent(state.settings.accent, state.settings.customAccent);
   document.documentElement.dataset.fontSize = state.settings.fontSize;
   document.documentElement.dataset.motion = state.settings.motion;
   applyTranslations();
@@ -737,10 +789,12 @@ function fillSettingsForm() {
   elements.saveHistoryInput.checked = state.formDraft.saveHistory;
   elements.languageSelect.value = state.formDraft.language;
   elements.themeSelect.value = state.formDraft.theme;
+  elements.customAccentInput.value = state.formDraft.customAccent;
   elements.fontSizeSelect.value = state.formDraft.fontSize;
   elements.motionSelect.value = state.formDraft.motion;
   updateCustomModeField();
   applyChoiceState(elements.accentControl, "accent", state.formDraft.accent);
+  updateCustomAccentControl();
   applyChoiceState(elements.toneControl, "tone", state.formDraft.tone);
   applyChoiceState(elements.lengthControl, "length", state.formDraft.replyLength);
   renderMemoryList();
@@ -826,13 +880,38 @@ function applyChoiceState(control, key, value) {
   }
 }
 
+function updateCustomAccentControl() {
+  if (!state.formDraft) return;
+  const custom = state.formDraft.accent === "custom";
+  const color = normalizeHexColor(state.formDraft.customAccent);
+  elements.customAccentField.classList.toggle("is-hidden", !custom);
+  elements.customAccentInput.disabled = !custom;
+  elements.customAccentInput.value = color;
+  elements.customAccentValue.textContent = color.toUpperCase();
+  elements.customAccentSwatch.style.backgroundColor = color;
+}
+
+function updateCustomAccentDraft() {
+  if (!state.formDraft) return;
+  state.formDraft.accent = "custom";
+  state.formDraft.customAccent = normalizeHexColor(elements.customAccentInput.value);
+  applyChoiceState(elements.accentControl, "accent", "custom");
+  updateCustomAccentControl();
+  applyAccent("custom", state.formDraft.customAccent);
+  clearSettingsSaveStatus();
+}
+
 function selectChoice(event, key) {
   const button = event.target.closest(`[data-${key}]`);
   if (!button || !state.formDraft) return;
   const value = button.dataset[key];
   if (key === "tone" && VALID_TONES.has(value)) state.formDraft.tone = value;
   if (key === "length" && VALID_LENGTHS.has(value)) state.formDraft.replyLength = value;
-  if (key === "accent" && VALID_ACCENTS.has(value)) state.formDraft.accent = value;
+  if (key === "accent" && VALID_ACCENTS.has(value)) {
+    state.formDraft.accent = value;
+    updateCustomAccentControl();
+    applyAccent(state.formDraft.accent, state.formDraft.customAccent);
+  }
   clearSettingsSaveStatus();
   applyChoiceState(event.currentTarget, key, value);
 }
@@ -902,6 +981,7 @@ function collectSettingsForm() {
     language: elements.languageSelect.value,
     theme: elements.themeSelect.value,
     accent: state.formDraft?.accent ?? state.settings.accent,
+    customAccent: state.formDraft?.customAccent ?? state.settings.customAccent,
     fontSize: elements.fontSizeSelect.value,
     motion: elements.motionSelect.value
   });
@@ -947,6 +1027,7 @@ function closeSettings(force = false) {
   }
   elements.settingsDialog.close();
   state.formDraft = null;
+  applyAccent(state.settings.accent, state.settings.customAccent);
 }
 
 async function saveSettings(event) {
@@ -1411,9 +1492,20 @@ async function loadCloudProfile() {
   state.profileSchemaReady = true;
   let { data, error } = await state.supabase
     .from("profiles")
-    .select("display_name,ai_name,tone,reply_length,memory,personalization,theme,accent,font_size,motion,language,send_delay,conversation_mode,custom_mode_prompt,save_history")
+    .select("display_name,ai_name,tone,reply_length,memory,personalization,theme,accent,custom_accent,font_size,motion,language,send_delay,conversation_mode,custom_mode_prompt,save_history")
     .eq("id", state.authUser.id)
     .maybeSingle();
+
+  if (error && /custom_accent/i.test(error.message || "")) {
+    state.profileSchemaReady = false;
+    const fallback = await state.supabase
+      .from("profiles")
+      .select("display_name,ai_name,tone,reply_length,memory,personalization,theme,accent,font_size,motion,language,send_delay,conversation_mode,custom_mode_prompt,save_history")
+      .eq("id", state.authUser.id)
+      .maybeSingle();
+    data = fallback.data;
+    error = fallback.error;
+  }
 
   if (error && /personalization/i.test(error.message || "")) {
     state.profileSchemaReady = false;
@@ -1464,6 +1556,7 @@ async function loadCloudProfile() {
       personalization: data.personalization ?? state.settings.personalization,
       theme: data.theme,
       accent: data.accent ?? state.settings.accent,
+      customAccent: data.custom_accent ?? state.settings.customAccent,
       fontSize: data.font_size ?? state.settings.fontSize,
       motion: data.motion ?? state.settings.motion,
       language: data.language ?? state.settings.language,
@@ -1500,6 +1593,7 @@ async function saveCloudProfile() {
     personalization: state.settings.personalization,
     theme: state.settings.theme,
     accent: state.settings.accent,
+    custom_accent: state.settings.customAccent,
     font_size: state.settings.fontSize,
     motion: state.settings.motion,
     language: state.settings.language,
@@ -2048,6 +2142,7 @@ elements.confirmDialog.addEventListener("cancel", (event) => {
   closeConfirmation();
 });
 elements.accentControl.addEventListener("click", (event) => selectChoice(event, "accent"));
+elements.customAccentInput.addEventListener("input", updateCustomAccentDraft);
 elements.toneControl.addEventListener("click", (event) => selectChoice(event, "tone"));
 elements.lengthControl.addEventListener("click", (event) => selectChoice(event, "length"));
 elements.modeSelect.addEventListener("change", updateCustomModeField);

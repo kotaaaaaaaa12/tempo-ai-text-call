@@ -7,7 +7,8 @@ create table if not exists public.profiles (
   memory text not null default '' check (char_length(memory) <= 500),
   personalization text not null default '' check (char_length(personalization) <= 1000),
   theme text not null default 'auto' check (theme in ('auto', 'light', 'dark')),
-  accent text not null default 'default' check (accent in ('default', 'coral', 'blue', 'violet', 'green')),
+  accent text not null default 'default' check (accent in ('default', 'blue', 'green', 'yellow', 'pink', 'orange', 'purple', 'custom')),
+  custom_accent text not null default '#7c3aed' check (custom_accent ~ '^#[0-9a-fA-F]{6}$'),
   font_size text not null default 'standard' check (font_size in ('small', 'standard', 'large')),
   motion text not null default 'auto' check (motion in ('auto', 'full', 'reduced', 'none')),
   language text not null default 'auto' check (language in ('auto', 'en', 'ja')),
@@ -29,16 +30,27 @@ add constraint profiles_language_check check (language in ('auto', 'en', 'ja'));
 
 alter table public.profiles
 add column if not exists accent text not null default 'default',
+add column if not exists custom_accent text not null default '#7c3aed',
 add column if not exists font_size text not null default 'standard',
 add column if not exists motion text not null default 'auto';
 
 alter table public.profiles
 drop constraint if exists profiles_accent_check,
+drop constraint if exists profiles_custom_accent_check,
 drop constraint if exists profiles_font_size_check,
 drop constraint if exists profiles_motion_check;
 
+update public.profiles
+set accent = case
+  when accent = 'coral' then 'orange'
+  when accent = 'violet' then 'purple'
+  else accent
+end
+where accent in ('coral', 'violet');
+
 alter table public.profiles
-add constraint profiles_accent_check check (accent in ('default', 'coral', 'blue', 'violet', 'green')),
+add constraint profiles_accent_check check (accent in ('default', 'blue', 'green', 'yellow', 'pink', 'orange', 'purple', 'custom')),
+add constraint profiles_custom_accent_check check (custom_accent ~ '^#[0-9a-fA-F]{6}$'),
 add constraint profiles_font_size_check check (font_size in ('small', 'standard', 'large')),
 add constraint profiles_motion_check check (motion in ('auto', 'full', 'reduced', 'none'));
 
