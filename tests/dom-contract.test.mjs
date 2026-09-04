@@ -31,10 +31,10 @@ test("the application shell uses organized versioned asset paths", async () => {
     readFile(new URL("../public/index.html", import.meta.url), "utf8"),
     readFile(new URL("../public/sw.js", import.meta.url), "utf8")
   ]);
-  assert.match(html, /\/assets\/css\/app\.css\?v=20/);
-  assert.match(html, /\/assets\/js\/app\.js\?v=20/);
+  assert.match(html, /\/assets\/css\/app\.css\?v=21/);
+  assert.match(html, /\/assets\/js\/app\.js\?v=21/);
   assert.match(html, /\/assets\/icons\/favicon\.svg/);
-  assert.match(worker, /tempo-shell-v20/);
+  assert.match(worker, /tempo-shell-v21/);
   assert.doesNotMatch(worker, /"\/sse\.js"/);
 });
 
@@ -223,4 +223,24 @@ test("account settings support Google and email password authentication", async 
   assert.match(app, /event\.preventDefault\(\);\s*void submitEmailAuth\(\)/);
   assert.match(app, /authOptions\.classList\.add\("is-hidden"\)/);
   assert.doesNotMatch(workerConfig, /send_email|"EMAIL"/);
+});
+
+test("standing personalization is editable, synchronized, and sent with every response", async () => {
+  const [html, app, protocol] = await Promise.all([
+    readFile(new URL("../public/index.html", import.meta.url), "utf8"),
+    readFile(new URL("../src/client/app.js", import.meta.url), "utf8"),
+    readFile(new URL("../src/server/protocol.js", import.meta.url), "utf8")
+  ]);
+
+  assert.match(html, /id="personalization-input"[^>]+maxlength="1000"/);
+  assert.match(app, /personalization: elements\.personalizationInput\.value/);
+  assert.match(app, /body: JSON\.stringify\(\{ messages: state\.messages, profile: state\.settings \}\)/);
+  assert.match(app, /personalization: state\.settings\.personalization/);
+  assert.match(protocol, /Standing personalization preferences supplied by the user and included in every conversation/);
+});
+
+test("remember requests receive a client-side approval action fallback", async () => {
+  const app = await readFile(new URL("../src/client/app.js", import.meta.url), "utf8");
+  assert.match(app, /ensureRememberAction\(parsedActions, latestUserText, translate\("rememberThis"\)\)/);
+  assert.match(app, /if \(type === "remember"\)/);
 });

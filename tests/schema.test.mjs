@@ -13,6 +13,8 @@ test("the schema adds private history, personalization fields, and self-service 
   const sql = await readFile(new URL("../supabase/schema.sql", import.meta.url), "utf8");
   assert.match(sql, /add column if not exists send_delay/i);
   assert.match(sql, /add column if not exists conversation_mode/i);
+  assert.match(sql, /add column if not exists personalization/i);
+  assert.match(sql, /char_length\(personalization\) <= 1000/i);
   assert.match(sql, /add column if not exists save_history/i);
   assert.match(sql, /create table if not exists public\.conversations/i);
   assert.match(sql, /alter table public\.conversations enable row level security/i);

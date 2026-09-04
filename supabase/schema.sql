@@ -5,6 +5,7 @@ create table if not exists public.profiles (
   tone text not null default 'casual' check (tone in ('casual', 'thoughtful', 'direct')),
   reply_length text not null default 'short' check (reply_length in ('short', 'balanced', 'detailed')),
   memory text not null default '' check (char_length(memory) <= 500),
+  personalization text not null default '' check (char_length(personalization) <= 1000),
   theme text not null default 'auto' check (theme in ('auto', 'light', 'dark')),
   accent text not null default 'default' check (accent in ('default', 'coral', 'blue', 'violet', 'green')),
   font_size text not null default 'standard' check (font_size in ('small', 'standard', 'large')),
@@ -48,14 +49,19 @@ add column if not exists custom_mode_prompt text not null default '',
 add column if not exists save_history boolean not null default false;
 
 alter table public.profiles
+add column if not exists personalization text not null default '';
+
+alter table public.profiles
 drop constraint if exists profiles_send_delay_check,
 drop constraint if exists profiles_conversation_mode_check,
-drop constraint if exists profiles_custom_mode_prompt_check;
+drop constraint if exists profiles_custom_mode_prompt_check,
+drop constraint if exists profiles_personalization_check;
 
 alter table public.profiles
 add constraint profiles_send_delay_check check (send_delay in ('fast', 'normal', 'slow', 'manual')),
 add constraint profiles_conversation_mode_check check (conversation_mode in ('general', 'study', 'english', 'brainstorm', 'advice', 'custom')),
-add constraint profiles_custom_mode_prompt_check check (char_length(custom_mode_prompt) <= 500);
+add constraint profiles_custom_mode_prompt_check check (char_length(custom_mode_prompt) <= 500),
+add constraint profiles_personalization_check check (char_length(personalization) <= 1000);
 
 alter table public.profiles enable row level security;
 

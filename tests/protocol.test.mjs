@@ -44,7 +44,12 @@ test("rejects roles outside the public protocol", () => {
 
 test("builds a non-stored streaming request", () => {
   const validation = validateChatBody({
-    profile: { tone: "direct", replyLength: "short", memory: "Likes astronomy" },
+    profile: {
+      tone: "direct",
+      replyLength: "short",
+      memory: "Likes astronomy",
+      personalization: "Use simple examples"
+    },
     messages: [{ role: "user", content: "Test" }]
   });
   assert.equal(validation.ok, true);
@@ -56,6 +61,7 @@ test("builds a non-stored streaming request", () => {
   assert.equal(request.store, false);
   assert.equal(request.max_output_tokens, 220);
   assert.match(request.instructions, /Likes astronomy/);
+  assert.match(request.instructions, /Use simple examples/);
   assert.equal(request.tools[0].name, "show_actions");
   assert.equal(request.tools[0].strict, true);
   assert.equal(request.tool_choice, "auto");
@@ -72,7 +78,8 @@ test("clips personalization fields and rejects unknown choices", () => {
       replyLength: "essay",
       conversationMode: "unsafe-override",
       customModePrompt: "x".repeat(700),
-      memory: "x".repeat(700)
+      memory: "x".repeat(700),
+      personalization: "x".repeat(1200)
     },
     messages: [{ role: "user", content: "Test" }]
   });
@@ -84,4 +91,5 @@ test("clips personalization fields and rejects unknown choices", () => {
   assert.equal(validation.value.profile.conversationMode, "general");
   assert.equal(validation.value.profile.customModePrompt.length, 500);
   assert.equal(validation.value.profile.memory.length, 500);
+  assert.equal(validation.value.profile.personalization.length, 1000);
 });

@@ -8,6 +8,7 @@ import {
   responseFunctionArguments,
   textDelta
 } from "../shared/sse.js";
+import { ensureRememberAction } from "../shared/actions.js";
 
 const MAX_INPUT_CHARS = 280;
 const HISTORY_LIMIT = 12;
@@ -29,6 +30,7 @@ const DEFAULT_SETTINGS = Object.freeze({
   tone: "casual",
   replyLength: "short",
   memory: "",
+  personalization: "",
   theme: "auto",
   accent: "default",
   fontSize: "standard",
@@ -104,6 +106,9 @@ const TRANSLATIONS = {
     callYou: "What should the AI call you?",
     yourName: "Your name",
     aiName: "AI name",
+    personalization: "Personalization",
+    personalizationPlaceholder: "How should the AI respond to you?",
+    personalizationNote: "These preferences are included in every call.",
     tone: "Tone",
     casual: "Casual",
     thoughtful: "Thoughtful",
@@ -231,6 +236,7 @@ const TRANSLATIONS = {
     accountDeleted: "Account deleted",
     accountDeleteFailed: "Could not delete the account. Run the latest supabase/schema.sql.",
     remembered: "Added to things to remember",
+    rememberThis: "Remember this",
     memoryFull: "Things to remember is full",
     appInstall: "App install",
     appInstallNote: "Add tempo to your home screen and keep its app shell available offline.",
@@ -304,6 +310,9 @@ const TRANSLATIONS = {
     callYou: "AIから何と呼ばれたいですか？",
     yourName: "あなたの名前",
     aiName: "AIの名前",
+    personalization: "パーソナライズ",
+    personalizationPlaceholder: "返答の好みや、常に前提にしてほしいこと…",
+    personalizationNote: "この内容はすべての通話で読み込まれます。",
     tone: "話し方",
     casual: "カジュアル",
     thoughtful: "落ち着き",
@@ -431,6 +440,7 @@ const TRANSLATIONS = {
     accountDeleted: "アカウントを削除しました",
     accountDeleteFailed: "アカウントを削除できませんでした。最新のsupabase/schema.sqlを実行してください。",
     remembered: "覚えてほしいことに追加しました",
+    rememberThis: "これを覚える",
     memoryFull: "保存できるメモリの上限に達しています",
     appInstall: "アプリとして使う",
     appInstallNote: "ホーム画面に追加して、アプリの画面をオフラインでも開けます。",
@@ -480,6 +490,7 @@ const elements = {
   accountStatus: document.querySelector("#account-status"),
   displayNameInput: document.querySelector("#display-name-input"),
   aiNameInput: document.querySelector("#ai-name-input"),
+  personalizationInput: document.querySelector("#personalization-input"),
   memoryList: document.querySelector("#memory-list"),
   memoryEmpty: document.querySelector("#memory-empty"),
   memoryAddInput: document.querySelector("#memory-add-input"),
@@ -589,6 +600,7 @@ function normalizeSettings(value) {
     tone: VALID_TONES.has(candidate.tone) ? candidate.tone : DEFAULT_SETTINGS.tone,
     replyLength: VALID_LENGTHS.has(candidate.replyLength) ? candidate.replyLength : DEFAULT_SETTINGS.replyLength,
     memory: typeof candidate.memory === "string" ? candidate.memory.trim().slice(0, 500) : "",
+    personalization: typeof candidate.personalization === "string" ? candidate.personalization.trim().slice(0, 1000) : "",
     theme: VALID_THEMES.has(candidate.theme) ? candidate.theme : DEFAULT_SETTINGS.theme,
     accent: VALID_ACCENTS.has(candidate.accent) ? candidate.accent : DEFAULT_SETTINGS.accent,
     fontSize: VALID_FONT_SIZES.has(candidate.fontSize) ? candidate.fontSize : DEFAULT_SETTINGS.fontSize,
@@ -717,6 +729,7 @@ function fillSettingsForm() {
   state.formDraft = { ...state.settings };
   elements.displayNameInput.value = state.formDraft.displayName;
   elements.aiNameInput.value = state.formDraft.aiName;
+  elements.personalizationInput.value = state.formDraft.personalization;
   elements.memoryAddInput.value = "";
   elements.modeSelect.value = state.formDraft.conversationMode;
   elements.customModeInput.value = state.formDraft.customModePrompt;
@@ -880,6 +893,7 @@ function collectSettingsForm() {
     ...(state.formDraft || state.settings),
     displayName: elements.displayNameInput.value,
     aiName: elements.aiNameInput.value,
+    personalization: elements.personalizationInput.value,
     memory: state.formDraft?.memory ?? state.settings.memory,
     conversationMode: elements.modeSelect.value,
     customModePrompt: elements.customModeInput.value,
@@ -1397,9 +1411,20 @@ async function loadCloudProfile() {
   state.profileSchemaReady = true;
   let { data, error } = await state.supabase
     .from("profiles")
-    .select("display_name,ai_name,tone,reply_length,memory,theme,accent,font_size,motion,language,send_delay,conversation_mode,custom_mode_prompt,save_history")
+    .select("display_name,ai_name,tone,reply_length,memory,personalization,theme,accent,font_size,motion,language,send_delay,conversation_mode,custom_mode_prompt,save_history")
     .eq("id", state.authUser.id)
     .maybeSingle();
+
+  if (error && /personalization/i.test(error.message || "")) {
+    state.profileSchemaReady = false;
+    const fallback = await state.supabase
+      .from("profiles")
+      .select("display_name,ai_name,tone,reply_length,memory,theme,accent,font_size,motion,language,send_delay,conversation_mode,custom_mode_prompt,save_history")
+      .eq("id", state.authUser.id)
+      .maybeSingle();
+    data = fallback.data;
+    error = fallback.error;
+  }
 
   if (error && /(accent|font_size|motion)/i.test(error.message || "")) {
     state.profileSchemaReady = false;
@@ -1436,6 +1461,7 @@ async function loadCloudProfile() {
       tone: data.tone,
       replyLength: data.reply_length,
       memory: data.memory,
+      personalization: data.personalization ?? state.settings.personalization,
       theme: data.theme,
       accent: data.accent ?? state.settings.accent,
       fontSize: data.font_size ?? state.settings.fontSize,
@@ -1471,6 +1497,7 @@ async function saveCloudProfile() {
     tone: state.settings.tone,
     reply_length: state.settings.replyLength,
     memory: state.settings.memory,
+    personalization: state.settings.personalization,
     theme: state.settings.theme,
     accent: state.settings.accent,
     font_size: state.settings.fontSize,
@@ -1783,7 +1810,11 @@ async function handleAssistantAction(event) {
 function settleResponse(requestState, interrupted) {
   if (requestState.settled) return;
   requestState.settled = true;
-  const actions = interrupted ? [] : parseActions(requestState.actionJson);
+  const parsedActions = interrupted ? [] : parseActions(requestState.actionJson);
+  const latestUserText = [...state.messages].reverse().find((message) => message.role === "user")?.content || "";
+  const actions = interrupted
+    ? []
+    : ensureRememberAction(parsedActions, latestUserText, translate("rememberThis"));
   if (!requestState.text.trim() && actions.length) requestState.text = translate("chooseAction");
   if (requestState.text.trim()) {
     const content = requestState.text.trim();

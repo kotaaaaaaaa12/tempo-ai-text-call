@@ -41,6 +41,7 @@ Keep `public/assets/js/app.js` committed for direct Worker deploys, but edit `sr
 - Optional Google sign-in with PKCE and email/password sign-up
 - Guest settings stored only on the device
 - Signed-in settings synchronized between devices
+- Standing personalization instructions included in every call
 - Explicit memory approval: suggested details are remembered only after the user taps the action
 - One settings hub with General, AI, Memory, History, and Account tabs
 - Saved memories shown as individual entries that can be added or removed
@@ -152,11 +153,11 @@ The committed browser bundle allows the previous `npx wrangler deploy` command t
 ## Personalization behavior
 
 - Guests keep settings in browser storage.
-- Google users synchronize settings through the `profiles` table.
+- Signed-in users synchronize settings through the `profiles` table.
 - Auto language uses Japanese only when the browser's primary language is Japanese. Every other browser language uses English.
-- The current settings are sent with each OpenAI request so the server can set the AI name, tone, reply length, conversation mode, and relevant user context. Interface-only appearance settings are ignored by the AI.
+- The current settings are sent with each OpenAI request so the server can set the AI name, tone, reply length, conversation mode, standing personalization, and relevant user context. Interface-only appearance settings are ignored by the AI.
 - Remembered text is treated as untrusted user background, not as system instructions.
-- Suggested memories are never saved automatically; the user must tap the clearly labeled memory action.
+- Suggested memories are never saved automatically; the user must tap the clearly labeled memory action. A safe client-side fallback adds that approval action when the model omits it after a direct remember request.
 - Conversation history is off by default and requires sign-in. When enabled, the app saves only to the signed-in user's RLS-protected rows in Supabase.
 - OpenAI requests use `store: false` regardless of the history setting.
 

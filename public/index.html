@@ -13,8 +13,8 @@
     <link rel="icon" href="/assets/icons/favicon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
     <link rel="manifest" href="/manifest.webmanifest">
-    <link rel="stylesheet" href="/assets/css/app.css?v=20">
-    <script type="module" src="/assets/js/app.js?v=20"></script>
+    <link rel="stylesheet" href="/assets/css/app.css?v=21">
+    <script type="module" src="/assets/js/app.js?v=21"></script>
   </head>
   <body>
     <main class="app-shell" id="app">
@@ -160,6 +160,11 @@
           <section class="settings-panel is-hidden" id="settings-panel-ai" role="tabpanel" aria-labelledby="settings-tab-ai" data-settings-panel="ai">
             <label class="field"><span data-i18n="callYou">What should the AI call you?</span><input id="display-name-input" name="displayName" maxlength="40" autocomplete="nickname" placeholder="Your name" data-i18n-placeholder="yourName"></label>
             <label class="field"><span data-i18n="aiName">AI name</span><input id="ai-name-input" name="aiName" maxlength="40" autocomplete="off" value="Nova"></label>
+            <label class="field">
+              <span data-i18n="personalization">Personalization</span>
+              <textarea id="personalization-input" name="personalization" rows="4" maxlength="1000" placeholder="How should the AI respond to you?" data-i18n-placeholder="personalizationPlaceholder"></textarea>
+              <small data-i18n="personalizationNote">These preferences are included in every call.</small>
+            </label>
             <fieldset class="choice-fieldset">
               <legend data-i18n="tone">Tone</legend>
               <div class="choice-row" id="tone-control">
